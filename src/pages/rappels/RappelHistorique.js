@@ -23,7 +23,7 @@ const RappelHistorique = ({ rappels }) => (
           </tr>
         ) : (
           rappels
-            .filter((rappel) => rappel.statut) // Afficher uniquement les rappels terminés
+            .filter((rappel) => rappel.statut)
             .map((rappel, index) => (
               <tr key={index} className="table-row-disabled">
                 <td>
