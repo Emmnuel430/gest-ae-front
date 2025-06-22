@@ -8,6 +8,7 @@ import Loader from "../../components/Layout/Loader";
 import { format, formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import RappelUpdate from "./RappelUpdate"; // Import du nouveau composant
+import { fetchWithToken } from "../../utils/fetchWithToken";
 
 const RappelsComplets = () => {
   const [rappels, setRappels] = useState([]);
@@ -26,7 +27,7 @@ const RappelsComplets = () => {
   useEffect(() => {
     const fetchRappels = async () => {
       try {
-        const response = await fetch(
+        const response = await fetchWithToken(
           `${process.env.REACT_APP_API_BASE_URL}/liste_rappels`
         );
         const data = await response.json();
@@ -65,7 +66,7 @@ const RappelsComplets = () => {
     }
 
     try {
-      const response = await fetch(
+      const response = await fetchWithToken(
         `${process.env.REACT_APP_API_BASE_URL}/delete_rappel/${selectedRappel.id}`,
         {
           method: "DELETE",
@@ -102,7 +103,7 @@ const RappelsComplets = () => {
 
   const handleUpdateRappel = async (updatedRappel) => {
     try {
-      const response = await fetch(
+      const response = await fetchWithToken(
         `${process.env.REACT_APP_API_BASE_URL}/update_rappel/${updatedRappel.id}`,
         {
           method: "POST",

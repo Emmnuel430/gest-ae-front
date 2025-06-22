@@ -4,6 +4,7 @@ import Layout from "../../components/Layout/Layout";
 import Back from "../../components/Layout/Back";
 import ConfirmPopup from "../../components/Layout/ConfirmPopup";
 import ToastMessage from "../../components/Layout/ToastMessage"; // adapte le chemin si besoin
+import { fetchWithToken } from "../../utils/fetchWithToken";
 
 const AddEtudiant = () => {
   // Déclaration des états pour gérer les champs du formulaire
@@ -177,7 +178,7 @@ const AddEtudiant = () => {
       console.log(JSON.stringify(etudiant));
 
       // Envoi des données à l'API
-      let result = await fetch(
+      let result = await fetchWithToken(
         `${process.env.REACT_APP_API_BASE_URL}/add_etudiant`,
         {
           method: "POST",

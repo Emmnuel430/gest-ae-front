@@ -8,6 +8,7 @@ import Layout from "../../components/Layout/Layout";
 import ConfirmPopup from "../../components/Layout/ConfirmPopup";
 import HeaderWithFilter from "../../components/Layout/HeaderWithFilter";
 import SearchBar from "../../components/Layout/SearchBar"; // Composant pour la barre de recherche
+import { fetchWithToken } from "../../utils/fetchWithToken";
 
 const MoniteurList = () => {
   // États pour stocker les moniteurs, le statut de chargement et les erreurs
@@ -67,7 +68,7 @@ const MoniteurList = () => {
   const fetchMoniteurs = async () => {
     setLoading(true);
     try {
-      const response = await fetch(
+      const response = await fetchWithToken(
         `${process.env.REACT_APP_API_BASE_URL}/liste_moniteur`
       );
       if (!response.ok) {
@@ -95,7 +96,7 @@ const MoniteurList = () => {
         return;
       }
 
-      const result = await fetch(
+      const result = await fetchWithToken(
         `${process.env.REACT_APP_API_BASE_URL}/delete_moniteur/${id}`,
         {
           method: "DELETE",

@@ -13,7 +13,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-
+import { fetchWithToken } from "../../utils/fetchWithToken";
 // Enregistrement des composants nécessaires pour les graphiques
 ChartJS.register(
   CategoryScale,
@@ -41,10 +41,10 @@ const Graph = () => {
       try {
         // Récupération des données depuis plusieurs endpoints
         const [evolutionResponse, etapesResponse] = await Promise.all([
-          fetch(
+          await fetchWithToken(
             `${process.env.REACT_APP_API_BASE_URL}/global/evolution-inscriptions`
           ),
-          fetch(
+          await fetchWithToken(
             `${process.env.REACT_APP_API_BASE_URL}/global/etudiants-par-etape`
           ),
         ]);

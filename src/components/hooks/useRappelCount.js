@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { fetchWithToken } from "../../utils/fetchWithToken";
 
 const useRappelCount = () => {
   const [rappelCount, setRappelCount] = useState(0);
@@ -6,7 +7,7 @@ const useRappelCount = () => {
 
   const fetchRappels = async () => {
     try {
-      const res = await fetch(
+      const res = await fetchWithToken(
         `${process.env.REACT_APP_API_BASE_URL}/rappels_recents`
       );
 

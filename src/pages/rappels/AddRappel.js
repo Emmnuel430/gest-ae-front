@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ConfirmPopup from "../../components/Layout/ConfirmPopup";
 import ToastMessage from "../../components/Layout/ToastMessage";
+import { fetchWithToken } from "../../utils/fetchWithToken";
 
 const AddRappel = ({ onClose }) => {
   const [titre, setTitre] = useState("");
@@ -53,7 +54,7 @@ const AddRappel = ({ onClose }) => {
         idUser: userId,
       };
 
-      let result = await fetch(
+      let result = await fetchWithToken(
         `${process.env.REACT_APP_API_BASE_URL}/add_rappel`,
         {
           method: "POST",

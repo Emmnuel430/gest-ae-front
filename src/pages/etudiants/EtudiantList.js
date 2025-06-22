@@ -7,6 +7,7 @@ import ConfirmPopup from "../../components/Layout/ConfirmPopup";
 import HeaderWithFilter from "../../components/Layout/HeaderWithFilter";
 import Loader from "../../components/Layout/Loader";
 import SearchBar from "../../components/Layout/SearchBar";
+import { fetchWithToken } from "../../utils/fetchWithToken";
 
 // Définition du composant principal
 const EtudiantList = () => {
@@ -80,7 +81,7 @@ const EtudiantList = () => {
   const fetchEtudiants = async () => {
     setLoading(true); // Active le spinner global
     try {
-      const response = await fetch(
+      const response = await fetchWithToken(
         `${process.env.REACT_APP_API_BASE_URL}/liste_etudiant`
       ); // Appel API
       if (!response.ok) {
@@ -109,7 +110,7 @@ const EtudiantList = () => {
         return;
       }
 
-      const result = await fetch(
+      const result = await fetchWithToken(
         `${process.env.REACT_APP_API_BASE_URL}/delete_etudiant/${id}`,
         {
           method: "DELETE", // Méthode HTTP DELETE

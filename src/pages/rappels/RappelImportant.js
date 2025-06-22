@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { format, formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import Loader from "../../components/Layout/Loader";
+import { fetchWithToken } from "../../utils/fetchWithToken";
 
 const RappelImportant = () => {
   const [rappels, setRappels] = useState([]);
@@ -13,7 +14,7 @@ const RappelImportant = () => {
   useEffect(() => {
     const fetchRappels = async () => {
       try {
-        const response = await fetch(
+        const response = await fetchWithToken(
           `${process.env.REACT_APP_API_BASE_URL}/generate_rappels`
         );
         const data = await response.json();

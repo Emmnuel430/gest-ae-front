@@ -4,6 +4,7 @@ import { Table } from "react-bootstrap"; // Importation de Table depuis react-bo
 import Layout from "../../components/Layout/Layout";
 import Loader from "../../components/Layout/Loader";
 import Back from "../../components/Layout/Back";
+import { fetchWithToken } from "../../utils/fetchWithToken";
 
 const Moniteur = () => {
   const { id } = useParams(); // Récupérer l'ID du moniteur depuis l'URL
@@ -19,7 +20,7 @@ const Moniteur = () => {
 
       try {
         // Appel à l'API pour récupérer les données du moniteur
-        const response = await fetch(
+        const response = await fetchWithToken(
           `${process.env.REACT_APP_API_BASE_URL}/moniteur/${id}`
         );
         if (!response.ok) {

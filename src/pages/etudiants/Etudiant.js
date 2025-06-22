@@ -6,6 +6,7 @@ import { fr } from "date-fns/locale";
 import Layout from "../../components/Layout/Layout";
 import ProgressBar from "../../components/others/ProgressBar";
 import Back from "../../components/Layout/Back";
+import { fetchWithToken } from "../../utils/fetchWithToken";
 
 const Etudiant = () => {
   const { id } = useParams(); // Récupération de l'ID depuis l'URL
@@ -37,7 +38,7 @@ const Etudiant = () => {
     // Fonction pour récupérer les données de l'étudiant
     const fetchEtudiant = async () => {
       try {
-        const response = await fetch(
+        const response = await fetchWithToken(
           `${process.env.REACT_APP_API_BASE_URL}/etudiant/${id}`
         );
         if (!response.ok) {

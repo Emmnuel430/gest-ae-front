@@ -2,7 +2,9 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom"; // Importez Link pour les redirections
 import Loader from "../../components/Layout/Loader"; // Assurez-vous que le chemin est correct
 import { formatDistanceToNow } from "date-fns";
+import { Table } from "react-bootstrap";
 import { fr } from "date-fns/locale"; // Importation pour la localisation française
+import { fetchWithToken } from "../../utils/fetchWithToken";
 
 const LastSection = () => {
   const [timeState, setTimeState] = useState(Date.now()); // État pour forcer le re-rendu
@@ -31,7 +33,7 @@ const LastSection = () => {
   const fetchRappels = async () => {
     setLoading(true); // Active le spinner global
     try {
-      const response = await fetch(
+      const response = await fetchWithToken(
         `${process.env.REACT_APP_API_BASE_URL}/generate_rappels`
       ); // Appel API
       if (!response.ok) {
@@ -50,7 +52,7 @@ const LastSection = () => {
   const fetchResulats = async () => {
     setLoading(true); // Active le spinner global
     try {
-      const response = await fetch(
+      const response = await fetchWithToken(
         `${process.env.REACT_APP_API_BASE_URL}/latest_resultat`
       ); // Appel API
       if (!response.ok) {
@@ -71,7 +73,7 @@ const LastSection = () => {
   const fetchLogs = async () => {
     setLoading(true); // Active le spinner global
     try {
-      const response = await fetch(
+      const response = await fetchWithToken(
         `${process.env.REACT_APP_API_BASE_URL}/latest_logs`
       ); // Appel API
       if (!response.ok) {
@@ -119,6 +121,24 @@ const LastSection = () => {
     return shortened; // Retourne la version abrégée
   };
 
+  // Traduction des actions en français
+  const getActionLabel = (action) => {
+    switch (action) {
+      case "add":
+        return "Ajout";
+      case "update":
+        return "M à j.";
+      case "delete":
+        return "Suppr.";
+      case "maj":
+        return "M à j.";
+      case "create":
+        return "Créer";
+      default:
+        return "Action inconnue";
+    }
+  };
+
   // Couleurs des actions
   const getActionColor = (action) => {
     switch (action) {
@@ -134,7 +154,6 @@ const LastSection = () => {
         return "bg-warning";
     }
   };
-
   return (
     <div>
       {/* Affiche un message d'erreur si une erreur est survenue */}
@@ -234,30 +253,29 @@ const LastSection = () => {
                 <div className="d-flex flex-column align-items-center">
                   {userInfo?.role ? (
                     logs.length > 0 ? (
-                      logs.map((log, index) => (
-                        <div
-                          key={index}
-                          className="d-flex align-items-center border-bottom py-2 w-100"
-                        >
-                          <div className="w-100 ms-3">
-                            <div className="w-100 d-flex align-items-center justify-content-between">
-                              <p
-                                className={`${getActionColor(
-                                  log.action
-                                )} text-uppercase mb-0 text-white rounded-pill p-2`}
-                              >
-                                {log.action}
-                              </p>
-                              <p className="mb-0 text-capitalize">
-                                {log.table_concernee}
-                              </p>
-                              <p className="mb-0">
-                                {formatDateRelative(log.created_at)}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      ))
+                      <>
+                        <Table hover className="centered-table w-100">
+                          <tbody>
+                            {logs.map((log, index) => (
+                              <tr key={index}>
+                                <td>
+                                  <span
+                                    className={`${getActionColor(
+                                      log.action
+                                    )} text-uppercase text-white rounded-pill px-2 py-1`}
+                                  >
+                                    {getActionLabel(log.action)}
+                                  </span>
+                                </td>
+                                <td className="text-capitalize">
+                                  {log.table_concernee}
+                                </td>
+                                <td>{formatDateRelative(log.created_at)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </Table>
+                      </>
                     ) : (
                       <div className="text-center text-muted h-100 d-flex align-items-center justify-content-center">
                         Aucun log disponible.

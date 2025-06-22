@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Layout from "../../components/Layout/Layout";
 import Back from "../../components/Layout/Back";
 import ConfirmPopup from "../../components/Layout/ConfirmPopup";
+import { fetchWithToken } from "../../utils/fetchWithToken";
 
 const AddMoniteur = () => {
   // États pour gérer les champs du formulaire et les interactions
@@ -51,7 +52,7 @@ const AddMoniteur = () => {
       };
 
       // Envoi de la requête POST pour ajouter le moniteur
-      let result = await fetch(
+      let result = await fetchWithToken(
         `${process.env.REACT_APP_API_BASE_URL}/add_moniteur`,
         {
           method: "POST",

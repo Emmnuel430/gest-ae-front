@@ -20,8 +20,8 @@ const Sidebar = ({ user }) => {
           />
           <h3 className="m-0 ps-2" style={{ color: "#ed3731" }}>
             {" "}
-            {/* Affichage du titre "Gest v1" */}
-            <strong>Gest v1</strong>
+            {/* Affichage du titre "Gest" */}
+            <strong>Gest v1.2</strong>
           </h3>
         </a>
         {/* Section profil utilisateur */}

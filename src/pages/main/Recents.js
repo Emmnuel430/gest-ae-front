@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom"; // Ajout de useNavigate pour la navigation
 import Loader from "../../components/Layout/Loader"; // Assurez-vous que le chemin est correct
+import { fetchWithToken } from "../../utils/fetchWithToken";
 
 const Recents = () => {
   const [etudiants, setEtudiants] = useState([]); // Liste des étudiants
@@ -16,7 +17,7 @@ const Recents = () => {
   const fetchEtudiants = async () => {
     setLoading(true); // Active le spinner global
     try {
-      const response = await fetch(
+      const response = await fetchWithToken(
         `${process.env.REACT_APP_API_BASE_URL}/latest_etudiant`
       ); // Appel API
       if (!response.ok) {

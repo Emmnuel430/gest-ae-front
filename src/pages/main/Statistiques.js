@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom"; // Importez Link pour les redirections
 import Loader from "../../components/Layout/Loader"; // Assurez-vous que le chemin est correct
+import { fetchWithToken } from "../../utils/fetchWithToken";
 
 const Statistiques = () => {
   const [totaux, setTotaux] = useState(null);
@@ -13,7 +14,7 @@ const Statistiques = () => {
       setError(null); // Réinitialise l'erreur
 
       try {
-        const response = await fetch(
+        const response = await fetchWithToken(
           `${process.env.REACT_APP_API_BASE_URL}/global/totaux`
         );
         if (!response.ok) {
@@ -114,7 +115,6 @@ const Statistiques = () => {
                 </div>
               </Link>
             </div>
-            {/* Carte pour le nombre total de moniteurs */}
             <div className="col-sm-6 col-xl-3">
               <Link to="/etudiants" className="text-decoration-none">
                 <div className="bg-body h-100 rounded border text-dark d-flex align-items-center justify-content-between p-4 hover-shadow">

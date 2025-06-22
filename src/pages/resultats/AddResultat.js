@@ -5,6 +5,7 @@ import Layout from "../../components/Layout/Layout";
 import Back from "../../components/Layout/Back";
 import ConfirmPopup from "../../components/Layout/ConfirmPopup";
 import ToastMessage from "../../components/Layout/ToastMessage";
+import { fetchWithToken } from "../../utils/fetchWithToken";
 
 const AddResultat = () => {
   const navigate = useNavigate();
@@ -67,7 +68,7 @@ const AddResultat = () => {
   // Fonction pour récupérer la liste des étudiants depuis l'API
   const fetchEtudiants = async () => {
     try {
-      const response = await fetch(
+      const response = await fetchWithToken(
         `${process.env.REACT_APP_API_BASE_URL}/liste_etudiant`
       );
       if (!response.ok)
@@ -111,7 +112,7 @@ const AddResultat = () => {
       const payload = { ...resultat, idUser: userId };
 
       // Envoyer la requête d'ajout à l'API
-      let response = await fetch(
+      let response = await fetchWithToken(
         `${process.env.REACT_APP_API_BASE_URL}/add_resultat`,
         {
           method: "POST",

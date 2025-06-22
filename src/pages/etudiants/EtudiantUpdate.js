@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import Layout from "../../components/Layout/Layout";
 import Back from "../../components/Layout/Back";
 import ConfirmPopup from "../../components/Layout/ConfirmPopup";
+import { fetchWithToken } from "../../utils/fetchWithToken";
 
 const EtudiantUpdate = () => {
   // Récupération des paramètres de l'URL et initialisation des états
@@ -84,7 +85,7 @@ const EtudiantUpdate = () => {
   // Fonction pour récupérer les moniteurs disponibles
   const fetchMoniteurs = async () => {
     try {
-      const response = await fetch(
+      const response = await fetchWithToken(
         `${process.env.REACT_APP_API_BASE_URL}/liste_moniteur`
       );
       if (!response.ok)
@@ -101,7 +102,7 @@ const EtudiantUpdate = () => {
   const fetchEtudiant = async () => {
     setError(""); // Réinitialiser les erreurs
     try {
-      const response = await fetch(
+      const response = await fetchWithToken(
         `${process.env.REACT_APP_API_BASE_URL}/etudiant/${id}`
       );
       if (!response.ok) {
@@ -191,7 +192,7 @@ const EtudiantUpdate = () => {
       };
 
       // Envoyer une requête POST pour mettre à jour les données de l'étudiant
-      const response = await fetch(
+      const response = await fetchWithToken(
         `${process.env.REACT_APP_API_BASE_URL}/update_etudiant/${id}`,
         {
           method: "POST",

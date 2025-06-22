@@ -68,7 +68,7 @@ const Recap = () => {
     });
 
     try {
-      const response = await fetch(
+      const response = await fetchWithToken(
         `${process.env.REACT_APP_API_BASE_URL}/add_programmations`,
         {
           method: "POST",

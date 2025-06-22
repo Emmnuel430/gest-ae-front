@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import Layout from "../../components/Layout/Layout";
 import Back from "../../components/Layout/Back";
 import ConfirmPopup from "../../components/Layout/ConfirmPopup";
+import { fetchWithToken } from "../../utils/fetchWithToken";
 
 const MoniteurUpdate = () => {
   const { id } = useParams(); // Récupère l'ID du moniteur depuis l'URL
@@ -30,7 +31,7 @@ const MoniteurUpdate = () => {
   // Récupère les informations du moniteur depuis l'API
   const fetchMoniteur = async () => {
     try {
-      const response = await fetch(
+      const response = await fetchWithToken(
         `${process.env.REACT_APP_API_BASE_URL}/moniteur/${id}`
       );
       if (!response.ok) {
@@ -69,7 +70,7 @@ const MoniteurUpdate = () => {
         return;
       }
 
-      const response = await fetch(
+      const response = await fetchWithToken(
         `${process.env.REACT_APP_API_BASE_URL}/update_moniteur/${id}`,
         {
           method: "POST",

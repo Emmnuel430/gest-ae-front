@@ -15,7 +15,7 @@ import {
   Legend,
 } from "chart.js";
 import { useMediaQuery } from "react-responsive";
-
+import { fetchWithToken } from "../utils/fetchWithToken";
 // Enregistrement des composants nécessaires pour les graphiques
 ChartJS.register(
   CategoryScale,
@@ -58,20 +58,22 @@ const Global = () => {
           totauxResponse,
           reductionResponse, // Ajout de la récupération des données de réduction
         ] = await Promise.all([
-          fetch(
+          await fetchWithToken(
             `${process.env.REACT_APP_API_BASE_URL}/global/evolution-inscriptions`
           ),
-          fetch(
+          await fetchWithToken(
             `${process.env.REACT_APP_API_BASE_URL}/global/repartition-categorie`
           ),
-          fetch(
+          await fetchWithToken(
             `${process.env.REACT_APP_API_BASE_URL}/global/repartition-moniteur`
           ),
-          fetch(
+          await fetchWithToken(
             `${process.env.REACT_APP_API_BASE_URL}/global/etudiants-par-etape`
           ),
-          fetch(`${process.env.REACT_APP_API_BASE_URL}/global/totaux`),
-          fetch(
+          await fetchWithToken(
+            `${process.env.REACT_APP_API_BASE_URL}/global/totaux`
+          ),
+          await fetchWithToken(
             `${process.env.REACT_APP_API_BASE_URL}/global/repartition-reduction`
           ), // Endpoint pour la réduction
         ]);

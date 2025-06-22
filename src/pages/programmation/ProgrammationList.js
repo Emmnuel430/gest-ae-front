@@ -5,6 +5,7 @@ import ConfirmPopup from "../../components/Layout/ConfirmPopup";
 import HeaderWithFilter from "../../components/Layout/HeaderWithFilter";
 import Loader from "../../components/Layout/Loader";
 import { format } from "date-fns";
+import { fetchWithToken } from "../../utils/fetchWithToken";
 
 const ProgrammationList = () => {
   // États pour gérer les programmations, le chargement, les erreurs et le modal de confirmation
@@ -21,7 +22,7 @@ const ProgrammationList = () => {
   useEffect(() => {
     const fetchProgrammations = async () => {
       try {
-        const response = await fetch(
+        const response = await fetchWithToken(
           `${process.env.REACT_APP_API_BASE_URL}/programmations`
         );
         const data = await response.json();
@@ -63,7 +64,7 @@ const ProgrammationList = () => {
     }
 
     try {
-      const response = await fetch(
+      const response = await fetchWithToken(
         `${process.env.REACT_APP_API_BASE_URL}/programmations/${selectedProgrammation.id}?idUser=${userId}`,
         {
           method: "DELETE",

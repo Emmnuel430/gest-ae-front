@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import Layout from "../../components/Layout/Layout";
 import Back from "../../components/Layout/Back";
 import ConfirmPopup from "../../components/Layout/ConfirmPopup"; // Importation du popup de confirmation
+import { fetchWithToken } from "../../utils/fetchWithToken";
 
 const UserUpdate = () => {
   // Récupération de l'ID de l'utilisateur à partir des paramètres d'URL
@@ -31,7 +32,7 @@ const UserUpdate = () => {
   const fetchUser = async () => {
     setError(""); // Réinitialisation de l'erreur avant chaque appel
     try {
-      const response = await fetch(
+      const response = await fetchWithToken(
         `${process.env.REACT_APP_API_BASE_URL}/user/${id}`
       ); // Requête pour récupérer l'utilisateur
       if (!response.ok) {
@@ -81,7 +82,7 @@ const UserUpdate = () => {
         body.password = newPassword; // Si un nouveau mot de passe est fourni, l'ajouter au corps
       }
 
-      const response = await fetch(
+      const response = await fetchWithToken(
         `${process.env.REACT_APP_API_BASE_URL}/update_user/${id}`,
         {
           method: "POST",

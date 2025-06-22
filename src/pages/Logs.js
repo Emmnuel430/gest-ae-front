@@ -3,6 +3,7 @@ import { Table, Modal, Button } from "react-bootstrap"; // Importation pour le m
 import Layout from "../components/Layout/Layout";
 import Loader from "../components/Layout/Loader";
 import HeaderWithFilter from "../components/Layout/HeaderWithFilter";
+import { fetchWithToken } from "../utils/fetchWithToken";
 
 import { format, set } from "date-fns";
 
@@ -28,7 +29,7 @@ const Logs = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(
+        const response = await fetchWithToken(
           `${process.env.REACT_APP_API_BASE_URL}/logs`
         );
         if (!response.ok) {

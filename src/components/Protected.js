@@ -6,23 +6,29 @@ const Protected = ({ Cmp, adminOnly = false }) => {
   const [isAuthorized, setIsAuthorized] = useState(false);
 
   useEffect(() => {
-    const userInfo = localStorage.getItem("user-info");
+    const excludedPaths = ["/", "/logout"];
+    if (excludedPaths.includes(window.location.pathname)) return;
 
-    if (!userInfo) {
-      navigate("/"); // Redirection si non connecté
+    const token = localStorage.getItem("token");
+    const userInfo = localStorage.getItem("user-info");
+    const user = userInfo ? JSON.parse(userInfo) : null;
+
+    if (!token || !user) {
+      localStorage.clear();
+      navigate("/");
       return;
     }
-
-    const user = JSON.parse(userInfo);
 
     const checkUserInDB = async () => {
       try {
         const response = await fetch(
-          `${process.env.REACT_APP_API_BASE_URL}/user/${user.id}`,
+          `${process.env.REACT_APP_API_BASE_URL}/user`,
           {
             method: "GET",
             headers: {
               "Content-Type": "application/json",
+              Accept: "application/json",
+              Authorization: `Bearer ${token}`,
             },
           }
         );
@@ -34,6 +40,14 @@ const Protected = ({ Cmp, adminOnly = false }) => {
 
         const data = await response.json();
         const currentUser = data.user;
+
+        if (
+          !currentUser ||
+          currentUser.id !== user.id ||
+          currentUser.pseudo !== user.pseudo
+        ) {
+          throw new Error("Invalid user data");
+        }
 
         // Vérification adminOnly
         if (adminOnly && !currentUser.role) {

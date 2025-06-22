@@ -8,6 +8,7 @@ import { format } from "date-fns";
 import AddRappel from "./AddRappel";
 import { Link } from "react-router-dom"; // Importer Link pour la navigation
 import RappelImportant from "./RappelImportant"; // Importer le nouveau composant
+import { fetchWithToken } from "../../utils/fetchWithToken";
 
 const Rappels = () => {
   const [rappels, setRappels] = useState([]);
@@ -23,7 +24,7 @@ const Rappels = () => {
   useEffect(() => {
     const fetchRappels = async () => {
       try {
-        const response = await fetch(
+        const response = await fetchWithToken(
           `${process.env.REACT_APP_API_BASE_URL}/liste_rappels`
         );
         const data = await response.json();
@@ -62,7 +63,7 @@ const Rappels = () => {
     }
 
     try {
-      const response = await fetch(
+      const response = await fetchWithToken(
         `${process.env.REACT_APP_API_BASE_URL}/delete_rappel/${selectedRappel.id}`,
         {
           method: "DELETE",

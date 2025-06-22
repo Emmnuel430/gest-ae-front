@@ -6,6 +6,7 @@ import HeaderWithFilter from "../../components/Layout/HeaderWithFilter"; // Comp
 import Loader from "../../components/Layout/Loader"; // Composant pour afficher un spinner de chargement
 import { format } from "date-fns"; // Utilisation de la librairie date-fns pour formater les dates
 import SearchBar from "../../components/Layout/SearchBar"; // Composant pour la barre de recherche
+import { fetchWithToken } from "../../utils/fetchWithToken";
 
 const Resultats = () => {
   // Définition des états nécessaires à l'application
@@ -25,7 +26,7 @@ const Resultats = () => {
   useEffect(() => {
     const fetchResultats = async () => {
       try {
-        const response = await fetch(
+        const response = await fetchWithToken(
           `${process.env.REACT_APP_API_BASE_URL}/resultats`
         ); // Appel à l'API pour récupérer les résultats
         const data = await response.json();
@@ -87,7 +88,7 @@ const Resultats = () => {
     }
 
     try {
-      const response = await fetch(
+      const response = await fetchWithToken(
         `${process.env.REACT_APP_API_BASE_URL}/update_resultat/${selectedResultat.id}`,
         {
           method: "PUT",
@@ -133,7 +134,7 @@ const Resultats = () => {
     }
 
     try {
-      const response = await fetch(
+      const response = await fetchWithToken(
         `${process.env.REACT_APP_API_BASE_URL}/delete_resultat/${selectedResultat.id}`,
         {
           method: "DELETE",
