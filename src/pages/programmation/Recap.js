@@ -7,7 +7,8 @@ import Layout from "../../components/Layout/Layout"; // Composant pour la mise e
 import Back from "../../components/Layout/Back"; // Composant pour le bouton de retour
 import ToastMessage from "../../components/Layout/ToastMessage"; // Composant pour le bouton de retour
 import ConfirmPopup from "../../components/Layout/ConfirmPopup"; // Importation du composant ConfirmPopup
-import { set } from "date-fns";
+import { fetchWithToken } from "../../utils/fetchWithToken"; // Fonction utilitaire pour les requêtes avec token
+import eventBus from "../../utils/eventBus";
 
 const Recap = () => {
   const location = useLocation(); // Récupère l'état passé via la navigation
@@ -48,7 +49,7 @@ const Recap = () => {
 
   // Fonction pour générer un fichier PDF
   const validerProgrammation = async () => {
-    const userInfo = JSON.parse(localStorage.getItem("user-info"));
+    const userInfo = JSON.parse(sessionStorage.getItem("user-info"));
     const userId = userInfo ? userInfo.id : null;
 
     if (!userId) {
@@ -77,6 +78,7 @@ const Recap = () => {
       );
 
       if (response.ok) {
+        eventBus.emit("rappel_updated");
         setLoading(false);
         alert("Programmation enregistrée avec succès !");
         navigate("/programmations");

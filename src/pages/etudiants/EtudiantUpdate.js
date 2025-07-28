@@ -4,6 +4,9 @@ import Layout from "../../components/Layout/Layout";
 import Back from "../../components/Layout/Back";
 import ConfirmPopup from "../../components/Layout/ConfirmPopup";
 import { fetchWithToken } from "../../utils/fetchWithToken";
+import ToastMessage from "../../components/Layout/ToastMessage";
+import Loader from "../../components/Layout/Loader";
+import eventBus from "../../utils/eventBus";
 
 const EtudiantUpdate = () => {
   // Récupération des paramètres de l'URL et initialisation des états
@@ -28,6 +31,7 @@ const EtudiantUpdate = () => {
   const [selectedMoniteur, setSelectedMoniteur] = useState(null); // Moniteur sélectionné
   const [montantPaye, setMontantPaye] = useState(0); // Montant additionnel à payer
   const [loading, setLoading] = useState(false); // Indicateur de chargement
+  const [load, setLoad] = useState(false);
   const [filter, setFilter] = useState(""); // Filtre pour les moniteurs
   const [showModal, setShowModal] = useState(false); // État pour afficher/masquer le modal
 
@@ -102,6 +106,7 @@ const EtudiantUpdate = () => {
   const fetchEtudiant = async () => {
     setError(""); // Réinitialiser les erreurs
     try {
+      setLoad(true);
       const response = await fetchWithToken(
         `${process.env.REACT_APP_API_BASE_URL}/etudiant/${id}`
       );
@@ -128,6 +133,8 @@ const EtudiantUpdate = () => {
       });
     } catch (error) {
       setError("Erreur lors de la récupération des données : " + error.message);
+    } finally {
+      setLoad(false);
     }
   };
 
@@ -150,8 +157,8 @@ const EtudiantUpdate = () => {
     setLoading(true); // Activer l'indicateur de chargement
 
     try {
-      // Récupérer les informations de l'utilisateur connecté depuis le localStorage
-      const userInfo = JSON.parse(localStorage.getItem("user-info"));
+      // Récupérer les informations de l'utilisateur connecté depuis le sessionStorage
+      const userInfo = JSON.parse(sessionStorage.getItem("user-info"));
       const userId = userInfo ? userInfo.id : null;
 
       // Vérifier si l'utilisateur est authentifié
@@ -196,15 +203,13 @@ const EtudiantUpdate = () => {
         `${process.env.REACT_APP_API_BASE_URL}/update_etudiant/${id}`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json", // Spécifier le type de contenu
-          },
           body: JSON.stringify(body), // Convertir le corps en JSON
         }
       );
 
       // Vérifier si la mise à jour a réussi
       if (response.ok) {
+        eventBus.emit("rappel_updated");
         alert("Données mises à jour avec succès !");
         navigate("/etudiant/" + id); // Rediriger vers la liste des étudiants
       } else {
@@ -228,167 +233,178 @@ const EtudiantUpdate = () => {
     <Layout>
       {/* Bouton pour revenir à la liste des étudiants */}
       <Back>etudiants</Back>
-      <div className="col-sm-6 offset-sm-3 mt-5">
-        {/* Affichage des erreurs */}
-        {error && <ToastMessage message={error} onClose={() => setError("")} />}
-        <h1>Modifier l'étudiant</h1>
-        <br />
-        {/* Formulaire de modification */}
-        <label>Nom</label>
-        <input
-          type="text"
-          name="nom"
-          className="form-control"
-          value={etudiant.nom}
-          onChange={handleChange}
-        />
-        <br />
-        <label>Prénom</label>
-        <input
-          type="text"
-          name="prenom"
-          className="form-control"
-          value={etudiant.prenom}
-          onChange={handleChange}
-        />
-        <br />
-        <label>Date de naissance</label>
-        <input
-          type="date"
-          name="dateNaissance"
-          className="form-control"
-          value={etudiant.dateNaissance}
-          onChange={handleChange}
-          max={minDate}
-        />
-        <br />
-
-        <label>Numéro de téléphone</label>
-        <input
-          type="text"
-          name="num_telephone"
-          className="form-control"
-          value={etudiant.num_telephone}
-          onChange={handleChange}
-        />
-        <br />
-
-        <label>Numéro de téléphone sécondaire</label>
-        <input
-          type="text"
-          name="num_telephone_2"
-          className="form-control"
-          value={etudiant.num_telephone_2}
-          onChange={handleChange}
-        />
-        <br />
-
-        {/* Gestion du paiement */}
-        {etudiant.scolarite - etudiant.montant_paye > 0 ? (
-          <>
-            <div className="form-group">
-              <label>Reste de la scolarité à payer</label>
-              <input
-                type="text"
-                className="form-control"
-                value={etudiant.scolarite - etudiant.montant_paye}
-                readOnly
-              />
-            </div>
-            <br />
-            <div className="form-group">
-              <label>Ajouter au montant payé</label>
-              <div className="input-group">
-                <input
-                  type="number"
-                  name="montant_paye"
-                  className="form-control"
-                  placeholder="Ajouter un montant au paiement"
-                  value={montantPaye || ""}
-                  onChange={(e) =>
-                    setMontantPaye(parseFloat(e.target.value) || 0)
-                  }
-                />
-                <button
-                  type="button"
-                  className="btn btn-success"
-                  onClick={() =>
-                    setMontantPaye(etudiant.scolarite - etudiant.montant_paye)
-                  }
-                >
-                  Soldé
-                </button>
-              </div>
-            </div>
-          </>
-        ) : (
-          <div className="alert alert-success text-center">
-            <strong>Soldé</strong>
-          </div>
-        )}
-        <br />
-        {/* Sélection de l'étape de progression */}
-        <label>Étape de progression</label>
-        <select
-          name="progression"
-          className="form-control"
-          value={etudiant.progression.etape}
-          onChange={handleChange}
+      {error && <ToastMessage message={error} onClose={() => setError("")} />}
+      {load === true ? (
+        <div
+          className="d-flex justify-content-center align-items-center"
+          style={{ height: "80vh" }} // Centrer Loader au milieu de l'écran
         >
-          {etudiant.motif_inscription === "recyclage"
-            ? recyclingSteps.map((step) => (
-                <option key={step.value} value={step.value}>
-                  {step.label}
-                </option>
-              ))
-            : defaultSteps.map((step) => (
-                <option key={step.value} value={step.value}>
-                  {step.label}
-                </option>
-              ))}
-        </select>
-        <br />
-        {/* Sélection d'un moniteur */}
-        {["cours_de_code", "cours_de_conduite"].includes(
-          etudiant.progression.etape
-        ) && (
-          <div>
-            <label>Rattacher un moniteur</label>
-            <select
-              className="form-control"
-              value={selectedMoniteur || etudiant.idMoniteur || ""}
-              onChange={(e) => setSelectedMoniteur(e.target.value)}
-            >
-              <option value="">-- Choisir un moniteur --</option>
-              {moniteurs
-                .filter((moniteur) => !filter || moniteur.specialite === filter)
-                .map((moniteur) => (
-                  <option key={moniteur.id} value={moniteur.id}>
-                    {moniteur.nom} {moniteur.prenom}
+          <Loader />
+        </div>
+      ) : (
+        <div className="col-sm-6 offset-sm-3 mt-5">
+          {/* Affichage des erreurs */}
+          <h1>Modifier l'étudiant</h1>
+          <br />
+          {/* Formulaire de modification */}
+          <label>Nom</label>
+          <input
+            type="text"
+            name="nom"
+            className="form-control"
+            value={etudiant.nom}
+            onChange={handleChange}
+          />
+          <br />
+          <label>Prénom</label>
+          <input
+            type="text"
+            name="prenom"
+            className="form-control"
+            value={etudiant.prenom}
+            onChange={handleChange}
+          />
+          <br />
+          <label>Date de naissance</label>
+          <input
+            type="date"
+            name="dateNaissance"
+            className="form-control"
+            value={etudiant.dateNaissance}
+            onChange={handleChange}
+            max={minDate}
+          />
+          <br />
+
+          <label>Numéro de téléphone</label>
+          <input
+            type="text"
+            name="num_telephone"
+            className="form-control"
+            value={etudiant.num_telephone}
+            onChange={handleChange}
+          />
+          <br />
+
+          <label>Numéro de téléphone sécondaire</label>
+          <input
+            type="text"
+            name="num_telephone_2"
+            className="form-control"
+            value={etudiant.num_telephone_2}
+            onChange={handleChange}
+          />
+          <br />
+
+          {/* Gestion du paiement */}
+          {etudiant.scolarite - etudiant.montant_paye > 0 ? (
+            <>
+              <div className="form-group">
+                <label>Reste de la scolarité à payer</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={etudiant.scolarite - etudiant.montant_paye}
+                  readOnly
+                />
+              </div>
+              <br />
+              <div className="form-group">
+                <label>Ajouter au montant payé</label>
+                <div className="input-group">
+                  <input
+                    type="number"
+                    name="montant_paye"
+                    className="form-control"
+                    placeholder="Ajouter un montant au paiement"
+                    value={montantPaye || ""}
+                    onChange={(e) =>
+                      setMontantPaye(parseFloat(e.target.value) || 0)
+                    }
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-success"
+                    onClick={() =>
+                      setMontantPaye(etudiant.scolarite - etudiant.montant_paye)
+                    }
+                  >
+                    Soldé
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="alert alert-success text-center">
+              <strong>Soldé</strong>
+            </div>
+          )}
+          <br />
+          {/* Sélection de l'étape de progression */}
+          <label>Étape de progression</label>
+          <select
+            name="progression"
+            className="form-control"
+            value={etudiant.progression.etape}
+            onChange={handleChange}
+          >
+            {etudiant.motif_inscription === "recyclage"
+              ? recyclingSteps.map((step) => (
+                  <option key={step.value} value={step.value}>
+                    {step.label}
+                  </option>
+                ))
+              : defaultSteps.map((step) => (
+                  <option key={step.value} value={step.value}>
+                    {step.label}
                   </option>
                 ))}
-            </select>
-          </div>
-        )}
-        <br />
-        {/* Bouton pour soumettre les modifications */}
-        <button
-          className="btn btn-primary w-100"
-          onClick={() => setShowModal(true)}
-          disabled={
-            loading ||
-            !etudiant.nom ||
-            !etudiant.prenom ||
-            (["cours_de_code", "cours_de_conduite"].includes(
-              etudiant.progression.etape
-            ) &&
-              !selectedMoniteur &&
-              !etudiant.idMoniteur)
-          }
-        >
-          Modifier{" "}
-        </button>
-      </div>
+          </select>
+          <br />
+          {/* Sélection d'un moniteur */}
+          {["cours_de_code", "cours_de_conduite"].includes(
+            etudiant.progression.etape
+          ) && (
+            <div>
+              <label>Rattacher un moniteur</label>
+              <select
+                className="form-control"
+                value={selectedMoniteur || etudiant.idMoniteur || ""}
+                onChange={(e) => setSelectedMoniteur(e.target.value)}
+              >
+                <option value="">-- Choisir un moniteur --</option>
+                {moniteurs
+                  .filter(
+                    (moniteur) => !filter || moniteur.specialite === filter
+                  )
+                  .map((moniteur) => (
+                    <option key={moniteur.id} value={moniteur.id}>
+                      {moniteur.nom} {moniteur.prenom}
+                    </option>
+                  ))}
+              </select>
+            </div>
+          )}
+          <br />
+          {/* Bouton pour soumettre les modifications */}
+          <button
+            className="btn btn-primary w-100"
+            onClick={() => setShowModal(true)}
+            disabled={
+              loading ||
+              !etudiant.nom ||
+              !etudiant.prenom ||
+              (["cours_de_code", "cours_de_conduite"].includes(
+                etudiant.progression.etape
+              ) &&
+                !selectedMoniteur &&
+                !etudiant.idMoniteur)
+            }
+          >
+            Modifier{" "}
+          </button>
+        </div>
+      )}
       {/* Modal de confirmation */}
       <ConfirmPopup
         show={showModal}

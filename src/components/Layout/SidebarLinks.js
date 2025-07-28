@@ -31,8 +31,13 @@ const SidebarLinks = ({ user }) => {
           label: "Programmation",
           extra: ["/add/programmation"],
         },
-        { to: "/rappels", icon: "bell", label: "Rappels" },
-        ...(user.role == 1
+        {
+          to: "/rappels",
+          icon: "bell",
+          label: "Rappels",
+          extra: ["/add/rappel", "/rappels-complets"],
+        },
+        ...(user.role
           ? [
               { to: "/global", icon: "globe", label: "Global" },
               {
@@ -46,7 +51,9 @@ const SidebarLinks = ({ user }) => {
                 icon: "chalkboard-teacher",
                 label: "Moniteurs",
               },
+
               { to: "/logs", icon: "file-alt", label: "Logs" },
+              { to: "/parametres", icon: "cogs", label: "Paramètres" },
             ]
           : []),
       ].map(({ to, icon, label, extra = [] }) => {
@@ -60,11 +67,11 @@ const SidebarLinks = ({ user }) => {
               isActiveLink ? "active bg-body-secondary fw-bold" : ""
             }`}
           >
-            <div>
+            <div className=" position-relative">
               <i className={`fa fa-${icon} me-2`}></i>
               <span className="text-body">{label}</span>
               {label === "Rappels" && totalRappels > 0 && (
-                <span className="bg-danger-subtle border border-danger rounded-pill p-1 ms-2 text-body">
+                <span className="position-absolute top-50 end-0 translate-middle badge rounded-pill bg-danger-subtle border border-danger text-body">
                   {totalRappels > 99 ? "99+" : totalRappels}
                 </span>
               )}

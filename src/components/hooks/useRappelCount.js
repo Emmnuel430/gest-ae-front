@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { fetchWithToken } from "../../utils/fetchWithToken";
+import eventBus from "../../utils/eventBus";
 
 const useRappelCount = () => {
   const [rappelCount, setRappelCount] = useState(0);
@@ -28,11 +29,17 @@ const useRappelCount = () => {
   useEffect(() => {
     fetchRappels(); // appel initial
 
-    const interval = setInterval(() => {
-      fetchRappels(); // appel toutes les 60 secondes par exemple
-    }, 60000);
+    // 🔔 Écoute des événements personnalisés
+    eventBus.on("rappel_updated", fetchRappels);
 
-    return () => clearInterval(interval); // nettoyage à la destruction
+    const interval = setInterval(() => {
+      fetchRappels(); // appel toutes les 600 secondes par exemple
+    }, 600000);
+
+    return () => {
+      eventBus.off("rappel_updated", fetchRappels);
+      clearInterval(interval);
+    };
   }, []);
 
   const totalRappels = rappelCount + rappelImpCount;

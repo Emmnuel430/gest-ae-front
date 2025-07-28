@@ -72,6 +72,24 @@ const Logs = () => {
     }
   };
 
+  // Traduction des actions en français
+  const getActionLabel = (action) => {
+    switch (action) {
+      case "add":
+        return "Ajout";
+      case "update":
+        return "M à j.";
+      case "delete":
+        return "Suppr.";
+      case "maj":
+        return "M à j.";
+      case "create":
+        return "Créer";
+      default:
+        return "Action inconnue";
+    }
+  };
+
   // Couleurs des actions
   const getActionColor = (action) => {
     switch (action) {
@@ -121,11 +139,11 @@ const Logs = () => {
               setFilter={setFilter}
               filterOptions={[
                 { value: "", label: "Tous les logs" },
-                { value: "add", label: "Add" },
-                { value: "delete", label: "Delete" },
-                { value: "update", label: "Update" },
-                { value: "maj", label: "Maj" },
-                { value: "create", label: "Create" },
+                { value: "add", label: "Ajout" },
+                { value: "delete", label: "Suppr." },
+                { value: "update", label: "M à j." },
+                { value: "maj", label: "M à j. (👤)" },
+                { value: "create", label: "Créer" },
               ]}
               sortOption={sortOption}
               setSortOption={setSortOption}
@@ -163,11 +181,11 @@ const Logs = () => {
                           : "Date non disponible"}
                       </td>
                       <td
-                        className={`${getActionColor(
-                          log.action
-                        )} text-white text-center text-uppercase`}
+                        className={`text-white text-center text-uppercase fs-5`}
                       >
-                        {log.action}
+                        <span className={`badge ${getActionColor(log.action)}`}>
+                          {getActionLabel(log.action)}
+                        </span>
                       </td>
                       <td>
                         <span className="text-uppercase">
@@ -244,14 +262,22 @@ const Logs = () => {
                     </div>
                     <div className="row mb-2">
                       <div className="col-6 fw-bold">Action :</div>
-                      <div className="col-6 text-uppercase">
-                        {selectedLog.action || "Non disponible"}
+                      <div className={`col-6 text-white text-uppercase fs-5`}>
+                        <span
+                          className={`badge ${getActionColor(
+                            selectedLog.action
+                          )}`}
+                        >
+                          {getActionLabel(
+                            selectedLog.action || "Non disponible"
+                          )}
+                        </span>
                       </div>
                     </div>
                     <div className="row mb-2">
                       <div className="col-6 fw-bold">Table concernée :</div>
                       <div className="col-6 text-uppercase">
-                        {selectedLog.table_concernee || "Non disponible"}
+                        -- {selectedLog.table_concernee || "Non disponible"} --
                       </div>
                     </div>
                     <div className="row mb-2">

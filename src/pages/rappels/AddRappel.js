@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import ConfirmPopup from "../../components/Layout/ConfirmPopup";
 import ToastMessage from "../../components/Layout/ToastMessage";
 import { fetchWithToken } from "../../utils/fetchWithToken";
+import eventBus from "../../utils/eventBus";
 
 const AddRappel = ({ onClose }) => {
   const [titre, setTitre] = useState("");
@@ -16,7 +17,7 @@ const AddRappel = ({ onClose }) => {
   const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
 
-  const userInfo = JSON.parse(localStorage.getItem("user-info"));
+  const userInfo = JSON.parse(sessionStorage.getItem("user-info"));
   const userId = userInfo ? userInfo.id : null;
 
   if (!userId) {
@@ -59,10 +60,6 @@ const AddRappel = ({ onClose }) => {
         {
           method: "POST",
           body: JSON.stringify(item),
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
         }
       );
 
@@ -74,6 +71,7 @@ const AddRappel = ({ onClose }) => {
         return;
       }
 
+      eventBus.emit("rappel_updated");
       setLoading(false);
       alert("Rappel ajouté");
       setTitre("");
@@ -115,7 +113,7 @@ const AddRappel = ({ onClose }) => {
 
   return (
     <>
-      <div className="">
+      <div>
         <h1>Création d'un nouveau rappel</h1>
         {error && <ToastMessage message={error} onClose={() => setError("")} />}
 

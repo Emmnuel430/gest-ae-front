@@ -18,8 +18,8 @@ const Register = () => {
   const [showModal, setShowModal] = useState(false); // Contrôle l'affichage du modal de confirmation
   const navigate = useNavigate(); // Hook pour la navigation
 
-  // Récupération de l'utilisateur actuellement connecté depuis le localStorage
-  const userInfo = JSON.parse(localStorage.getItem("user-info"));
+  // Récupération de l'utilisateur actuellement connecté depuis le sessionStorage
+  const userInfo = JSON.parse(sessionStorage.getItem("user-info"));
   const userId = userInfo ? userInfo.id : null;
 
   // Si aucun utilisateur n'est authentifié, on redirige vers la page de connexion
@@ -61,10 +61,6 @@ const Register = () => {
         {
           method: "POST",
           body: JSON.stringify(item),
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
         }
       );
 

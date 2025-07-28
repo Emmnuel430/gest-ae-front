@@ -1,5 +1,5 @@
 export async function fetchWithToken(url, options = {}) {
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("token");
 
   const headers = {
     "Content-Type": "application/json",
@@ -18,9 +18,16 @@ export async function fetchWithToken(url, options = {}) {
 
   // Si le token est invalide ou expiré
   if (response.status === 401) {
-    localStorage.clear();
+    sessionStorage.clear();
     window.location.href = "/";
     throw new Error("Non autorisé");
+  }
+
+  // Cas d'erreur 422 : Erreur de validation Laravel
+  if (response.status === 422) {
+    const errorData = await response.json();
+    console.error("Erreur de validation :", errorData);
+    throw new Error("Erreur de validation");
   }
 
   return response;

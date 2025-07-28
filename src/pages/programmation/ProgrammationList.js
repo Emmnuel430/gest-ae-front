@@ -54,7 +54,7 @@ const ProgrammationList = () => {
   // Suppression d'une programmation après confirmation
   const handleDelete = async () => {
     if (!selectedProgrammation) return;
-    const userInfo = JSON.parse(localStorage.getItem("user-info"));
+    const userInfo = JSON.parse(sessionStorage.getItem("user-info"));
     const userId = userInfo ? userInfo.id : null;
 
     if (!userId) {

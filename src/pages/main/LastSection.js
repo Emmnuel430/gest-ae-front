@@ -26,7 +26,7 @@ const LastSection = () => {
     return () => clearInterval(interval); // Nettoie l'intervalle lors du démontage
   }, []); // Le tableau vide [] signifie que l'effet ne s'exécute qu'une seule fois après le premier rendu
 
-  const userInfo = JSON.parse(localStorage.getItem("user-info")); //
+  const userInfo = JSON.parse(sessionStorage.getItem("user-info")); //
   // Récupération des informations utilisateur
 
   // Fonction pour récupérer la liste des rappesls importants depuis l'API
@@ -41,7 +41,7 @@ const LastSection = () => {
       }
       const data = await response.json(); // Parse les données JSON
       // console.log(data);
-      setRappelsImportant(data.rappelActifs);
+      setRappelsImportant(data.rappels);
     } catch (err) {
       setError("Impossible de charger les données : " + err.message); // Stocke le message d'erreur
     } finally {
@@ -247,7 +247,7 @@ const LastSection = () => {
             <div className="col-sm-12 col-md-6 col-xl-4">
               <div className="h-100 bg-body rounded border p-4">
                 <div className="d-flex align-items-center justify-content-between mb-4">
-                  <h6 className="mb-0">Logs (admin only)</h6>
+                  <h6 className="mb-0">Logs</h6>
                   {userInfo?.role && <Link to="/logs">Voir</Link>}
                 </div>
                 <div className="d-flex flex-column align-items-center">

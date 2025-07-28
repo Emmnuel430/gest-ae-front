@@ -46,21 +46,20 @@ const Recents = () => {
       ) : (
         <>
           {/* Section pour les nouveaux étudiants */}
-          <div className="bg-body text-center rounded p-4 mb-4">
+          <div className="bg-body text-center rounded p-4 mb-4 border">
             <div className="d-flex align-items-center justify-content-between mb-4">
               <h6 className="mb-0">Nouveaux étudiants (10 dern.)</h6>
-              <Link to="/etudiants">Voir</Link>
+              <Link to="/etudiants">Tout Voir</Link>
             </div>
             <div className="table-responsive">
               <table className="table centered-table text-start align-middle text-bordered table-hover mb-0">
                 <thead>
                   <tr className="text-dark">
                     <th scope="col">Id</th>
-                    <th scope="col">Nom</th>
-                    <th scope="col">Prénom(s)</th>
+                    <th scope="col">Nom & Prénom(s)</th>
                     <th scope="col">Motif</th>
                     <th scope="col">Scolarité</th>
-                    <th scope="col">Action</th>
+                    <th scope="col"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -77,16 +76,22 @@ const Recents = () => {
                       .map((etudiant) => (
                         <tr key={etudiant.id}>
                           <td>etu-{etudiant.id}</td>
-                          <td>{etudiant.nom}</td>
-                          <td>{etudiant.prenom}</td>
+                          <td className="text-uppercase">
+                            <strong>{etudiant.nom}</strong>{" "}
+                            {etudiant.prenom.split(" ")[0]}
+                          </td>
                           <td
-                            className={`text-center text-capitalize ${
-                              etudiant.motif_inscription === "permis"
-                                ? "bg-info"
-                                : "bg-secondary"
-                            } text-white`}
+                            className={`text-center text-capitalize text-white`}
                           >
-                            {etudiant.motif_inscription}
+                            <span
+                              className={`badge ${
+                                etudiant.motif_inscription === "permis"
+                                  ? "bg-info"
+                                  : "bg-secondary"
+                              }`}
+                            >
+                              {etudiant.motif_inscription}
+                            </span>
                           </td>
                           <td>
                             {etudiant.montant_paye >= etudiant.scolarite ? (

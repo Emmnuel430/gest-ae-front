@@ -193,7 +193,7 @@ const Etudiant = () => {
                         {details.type_piece || "Non renseigné"}
                       </div>
                       <div className="col-md-6 mb-2">
-                        <strong>Numéro :</strong>{" "}
+                        <strong>N° :</strong>{" "}
                         {details.num_piece || "Non renseigné"}
                       </div>
                     </div>
@@ -221,9 +221,9 @@ const Etudiant = () => {
                     </div>
                   </div>
 
-                  {/* Informations pédagogiques */}
+                  {/* Informations supplémentaires */}
                   <div className="bg-body rounded shadow-sm p-3">
-                    <h5 className="mb-3">📚 Informations pédagogiques</h5>
+                    <h5 className="mb-3">➕ Informations supplémentaires</h5>
                     <div className="row">
                       {details.motif_inscription === "permis" && (
                         <div className="col-md-6 mb-2">

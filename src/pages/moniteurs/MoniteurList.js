@@ -9,6 +9,7 @@ import ConfirmPopup from "../../components/Layout/ConfirmPopup";
 import HeaderWithFilter from "../../components/Layout/HeaderWithFilter";
 import SearchBar from "../../components/Layout/SearchBar"; // Composant pour la barre de recherche
 import { fetchWithToken } from "../../utils/fetchWithToken";
+import eventBus from "../../utils/eventBus";
 
 const MoniteurList = () => {
   // États pour stocker les moniteurs, le statut de chargement et les erreurs
@@ -87,7 +88,7 @@ const MoniteurList = () => {
   const deleteOperation = async (id) => {
     setLoading(id);
     try {
-      const userInfo = JSON.parse(localStorage.getItem("user-info"));
+      const userInfo = JSON.parse(sessionStorage.getItem("user-info"));
       const userId = userInfo ? userInfo.id : null;
 
       if (!userId) {
@@ -100,7 +101,6 @@ const MoniteurList = () => {
         `${process.env.REACT_APP_API_BASE_URL}/delete_moniteur/${id}`,
         {
           method: "DELETE",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ user_id: userId }),
         }
       );
@@ -108,6 +108,7 @@ const MoniteurList = () => {
       const response = await result.json();
 
       if (response.status === "deleted") {
+        eventBus.emit("rappel_updated");
         alert("Moniteur supprimé !");
         setMoniteurs(moniteurs.filter((moniteur) => moniteur.id !== id));
       } else {
@@ -211,10 +212,9 @@ const MoniteurList = () => {
                 <tr>
                   <th>#</th>
                   <th>ID</th>
-                  <th>Nom</th>
-                  <th>Prénom</th>
+                  <th>Nom & Prénom</th>
+                  <th></th>
                   <th>Spécialité</th>
-                  <th>Créé il y a</th>
                   <th>M-A-J il y a</th>
                   <th>Opérations</th>
                 </tr>
@@ -226,18 +226,21 @@ const MoniteurList = () => {
                     <tr key={index}>
                       <td>{index + 1}</td>
                       <td>moni-{moniteur.id}</td>
-                      <td>{moniteur.nom}</td>
-                      <td>{moniteur.prenom}</td>
-                      <td
-                        className={`text-uppercase ${
-                          moniteur.specialite === "code"
-                            ? "bg-info"
-                            : "bg-warning"
-                        } text-white`}
-                      >
-                        {moniteur.specialite}
+                      <td className="text-uppercase">
+                        <strong>{moniteur.nom}</strong> {moniteur.prenom}
                       </td>
-                      <td>{formatDateRelative(moniteur.created_at)}</td>
+                      <td></td>
+                      <td className={`text-uppercase`}>
+                        <span
+                          className={`badge ${
+                            moniteur.specialite === "code"
+                              ? "bg-info"
+                              : "bg-warning text-dark"
+                          }`}
+                        >
+                          {moniteur.specialite}
+                        </span>
+                      </td>
                       <td>
                         {moniteur.created_at === moniteur.updated_at
                           ? "-"

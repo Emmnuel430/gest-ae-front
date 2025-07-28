@@ -4,6 +4,7 @@ import Layout from "../../components/Layout/Layout";
 import Back from "../../components/Layout/Back";
 import ConfirmPopup from "../../components/Layout/ConfirmPopup";
 import { fetchWithToken } from "../../utils/fetchWithToken";
+import Loader from "../../components/Layout/Loader";
 
 const MoniteurUpdate = () => {
   const { id } = useParams(); // Récupère l'ID du moniteur depuis l'URL
@@ -18,6 +19,7 @@ const MoniteurUpdate = () => {
 
   const [error, setError] = useState(""); // Stocke les erreurs
   const [loading, setLoading] = useState(false); // Indique si une requête est en cours
+  const [load, setLoad] = useState(false);
   const [showModal, setShowModal] = useState(false); // Gère l'affichage de la boîte de confirmation
 
   // Fonction pour fermer le modal de confirmation
@@ -31,6 +33,7 @@ const MoniteurUpdate = () => {
   // Récupère les informations du moniteur depuis l'API
   const fetchMoniteur = async () => {
     try {
+      setLoad(true);
       const response = await fetchWithToken(
         `${process.env.REACT_APP_API_BASE_URL}/moniteur/${id}`
       );
@@ -47,6 +50,8 @@ const MoniteurUpdate = () => {
     } catch (error) {
       console.error("Erreur lors de la récupération du moniteur:", error);
       setError(error.message || error);
+    } finally {
+      setLoad(false);
     }
   };
 
@@ -60,8 +65,8 @@ const MoniteurUpdate = () => {
   const updateMoniteur = async () => {
     setLoading(true);
     try {
-      // Récupération de l'utilisateur connecté depuis localStorage
-      const userInfo = JSON.parse(localStorage.getItem("user-info"));
+      // Récupération de l'utilisateur connecté depuis sessionStorage
+      const userInfo = JSON.parse(sessionStorage.getItem("user-info"));
       const userId = userInfo ? userInfo.id : null;
 
       if (!userId) {
@@ -74,9 +79,6 @@ const MoniteurUpdate = () => {
         `${process.env.REACT_APP_API_BASE_URL}/update_moniteur/${id}`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
           body: JSON.stringify({
             ...moniteur,
             user_id: userId, // Ajoute l'ID de l'utilisateur pour la traçabilité
@@ -104,68 +106,77 @@ const MoniteurUpdate = () => {
     <div>
       <Layout>
         <Back>moniteurs</Back>
-        <div className="col-sm-6 offset-sm-3">
-          <h1>Modifier les données du moniteur</h1>
-          <br />
-          {/* Affichage des erreurs */}
-          {error && <div className="alert alert-danger">{error}</div>}
-
-          {/* Champ pour le nom */}
-          <label htmlFor="nom" className="form-label">
-            Nom
-          </label>
-          <input
-            type="text"
-            id="nom"
-            name="nom"
-            className="form-control"
-            placeholder="Nom"
-            value={moniteur.nom}
-            onChange={handleChange}
-          />
-          <br />
-
-          {/* Champ pour le prénom */}
-          <label htmlFor="prenom" className="form-label">
-            Prénom
-          </label>
-          <input
-            type="text"
-            id="prenom"
-            name="prenom"
-            className="form-control"
-            placeholder="Prénom"
-            value={moniteur.prenom}
-            onChange={handleChange}
-          />
-          <br />
-
-          {/* Sélection de la spécialité */}
-          <label htmlFor="specialite" className="form-label">
-            Spécialité
-          </label>
-          <select
-            id="specialite"
-            name="specialite"
-            className="form-control"
-            value={moniteur.specialite}
-            onChange={handleChange}
+        {/* Affichage des erreurs */}
+        {error && <div className="alert alert-danger">{error}</div>}
+        {load === true ? (
+          <div
+            className="d-flex justify-content-center align-items-center"
+            style={{ height: "80vh" }} // Centrer Loader au milieu de l'écran
           >
-            <option value="">Sélectionner une spécialité</option>
-            <option value="code">Code</option>
-            <option value="conduite">Conduite</option>
-          </select>
-          <br />
+            <Loader />
+          </div>
+        ) : (
+          <div className="col-sm-6 offset-sm-3">
+            <h1>Modifier les données du moniteur</h1>
+            <br />
 
-          {/* Bouton de modification */}
-          <button
-            onClick={() => setShowModal(true)} // Affiche la boîte de confirmation
-            className="btn btn-primary w-100"
-            disabled={loading} // Désactive le bouton pendant le chargement
-          >
-            Modifier
-          </button>
-        </div>
+            {/* Champ pour le nom */}
+            <label htmlFor="nom" className="form-label">
+              Nom
+            </label>
+            <input
+              type="text"
+              id="nom"
+              name="nom"
+              className="form-control"
+              placeholder="Nom"
+              value={moniteur.nom}
+              onChange={handleChange}
+            />
+            <br />
+
+            {/* Champ pour le prénom */}
+            <label htmlFor="prenom" className="form-label">
+              Prénom
+            </label>
+            <input
+              type="text"
+              id="prenom"
+              name="prenom"
+              className="form-control"
+              placeholder="Prénom"
+              value={moniteur.prenom}
+              onChange={handleChange}
+            />
+            <br />
+
+            {/* Sélection de la spécialité */}
+            <label htmlFor="specialite" className="form-label">
+              Spécialité
+            </label>
+            <select
+              id="specialite"
+              name="specialite"
+              className="form-control"
+              value={moniteur.specialite}
+              onChange={handleChange}
+            >
+              <option value="">Sélectionner une spécialité</option>
+              <option value="code">Code</option>
+              <option value="conduite">Conduite</option>
+            </select>
+            <br />
+
+            {/* Bouton de modification */}
+            <button
+              onClick={() => setShowModal(true)} // Affiche la boîte de confirmation
+              className="btn btn-primary w-100"
+              disabled={loading} // Désactive le bouton pendant le chargement
+            >
+              Modifier
+            </button>
+          </div>
+        )}
 
         {/* Utilisation du ConfirmPopup pour confirmer la mise à jour */}
         <ConfirmPopup

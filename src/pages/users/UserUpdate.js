@@ -4,12 +4,14 @@ import Layout from "../../components/Layout/Layout";
 import Back from "../../components/Layout/Back";
 import ConfirmPopup from "../../components/Layout/ConfirmPopup"; // Importation du popup de confirmation
 import { fetchWithToken } from "../../utils/fetchWithToken";
+import Loader from "../../components/Layout/Loader";
 
 const UserUpdate = () => {
   // Récupération de l'ID de l'utilisateur à partir des paramètres d'URL
   const { id } = useParams();
   const navigate = useNavigate();
   const [error, setError] = useState(""); // État pour les erreurs
+  const [showPassword, setShowPassword] = useState(false);
   const [user, setUser] = useState({
     nom: "",
     prenom: "",
@@ -17,10 +19,11 @@ const UserUpdate = () => {
     newPassword: "",
   }); // État pour stocker les données de l'utilisateur
   const [loading, setLoading] = useState(false); // État pour gérer l'état de chargement
+  const [load, setLoad] = useState(false);
   const [showModal, setShowModal] = useState(false); // État pour afficher ou non le modal de confirmation
   const [showPasswordInput, setShowPasswordInput] = useState(false); // État pour afficher ou masquer le champ de mot de passe
 
-  const userInfo = JSON.parse(localStorage.getItem("user-info")); // Récupérer les informations de l'utilisateur connecté
+  const userInfo = JSON.parse(sessionStorage.getItem("user-info")); // Récupérer les informations de l'utilisateur connecté
   const userId = userInfo ? userInfo.id : null; // Récupérer l'ID de l'utilisateur connecté
 
   // Hook useEffect qui se déclenche une fois au montage du composant
@@ -32,6 +35,7 @@ const UserUpdate = () => {
   const fetchUser = async () => {
     setError(""); // Réinitialisation de l'erreur avant chaque appel
     try {
+      setLoad(true);
       const response = await fetchWithToken(
         `${process.env.REACT_APP_API_BASE_URL}/user/${id}`
       ); // Requête pour récupérer l'utilisateur
@@ -44,6 +48,8 @@ const UserUpdate = () => {
       setUser({ ...data.user, newPassword: "" }); // Mise à jour des données utilisateur
     } catch (error) {
       setError("Erreur lors de la récupération des données utilisateur.");
+    } finally {
+      setLoad(false);
     }
   };
 
@@ -86,9 +92,6 @@ const UserUpdate = () => {
         `${process.env.REACT_APP_API_BASE_URL}/update_user/${id}`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
           body: JSON.stringify({
             ...body,
             user_id: userId,
@@ -96,8 +99,14 @@ const UserUpdate = () => {
         }
       );
 
+      const data = await response.json(); // Parse de la réponse JSON
+
       if (response.ok) {
         alert("Données mises à jour !");
+        if (parseInt(userId) === parseInt(id)) {
+          sessionStorage.setItem("user-info", JSON.stringify(data.user));
+          // window.location.reload();
+        }
         navigate("/utilisateurs"); // Redirige vers la liste des utilisateurs après la mise à jour
       } else {
         const errorResponse = await response.json();
@@ -113,106 +122,124 @@ const UserUpdate = () => {
   return (
     <Layout>
       <Back>utilisateurs</Back>
-      <div className="col-sm-6 offset-sm-3">
-        {error && <div className="alert alert-danger">{error}</div>}{" "}
-        {/* Affiche les erreurs, s'il y en a */}
-        <h1>Modifier les données de l'utilisateur</h1>
-        <br />
-        {/* Champs de formulaire pour modifier les données de l'utilisateur */}
-        <label htmlFor="nom" className="form-label">
-          Nom
-        </label>
-        <input
-          type="text"
-          id="nom"
-          name="nom"
-          className="form-control"
-          placeholder="Nom"
-          value={user.nom}
-          onChange={handleChange} // Appel de la fonction de gestion des changements
-        />
-        <br />
-        <label htmlFor="prenom" className="form-label">
-          Prénom
-        </label>
-        <input
-          type="text"
-          id="prenom"
-          name="prenom"
-          className="form-control"
-          placeholder="Prénom"
-          value={user.prenom}
-          onChange={handleChange}
-        />
-        <br />
-        <label htmlFor="pseudo" className="form-label">
-          Pseudo
-        </label>
-        <input
-          type="text"
-          id="pseudo"
-          name="pseudo"
-          className="form-control"
-          placeholder="Pseudo"
-          value={user.pseudo}
-          onChange={handleChange}
-        />
-        <br />
-        <br />
-        {/* Bouton pour afficher ou masquer le champ de mot de passe */}
-        <button
-          onClick={() => setShowPasswordInput(!showPasswordInput)}
-          className="btn btn-secondary w-100"
+      {error && <div className="alert alert-danger">{error}</div>}{" "}
+      {load === true ? (
+        <div
+          className="d-flex justify-content-center align-items-center"
+          style={{ height: "80vh" }} // Centrer Loader au milieu de l'écran
         >
-          {showPasswordInput
-            ? "Masquer le champ de mot de passe"
-            : "Modifier le mot de passe"}
-        </button>
-        <br />
-        <br />
-        {showPasswordInput && (
-          <>
-            {/* Champ pour modifier le mot de passe */}
-            <label htmlFor="newPassword" className="form-label">
-              Nouveau mot de passe
-            </label>
-            <input
-              type="password"
-              id="newPassword"
-              name="newPassword"
-              className="form-control"
-              placeholder="Nouveau mot de passe *"
-              value={user.newPassword}
-              onChange={handleChange}
-            />
-            <small className="text-muted">
-              * Laissez vide si vous ne souhaitez pas modifier le mot de passe.
-            </small>
-            <br />
-          </>
-        )}
-        <br />
-        {/* Bouton pour valider la modification */}
-        <button
-          onClick={() => setShowModal(true)} // Ouvre le modal de confirmation
-          className="btn btn-primary w-100"
-          disabled={loading} // Désactive le bouton pendant le chargement
-        >
-          {loading ? (
+          <Loader />
+        </div>
+      ) : (
+        <div className="col-sm-6 offset-sm-3">
+          {/* Affiche les erreurs, s'il y en a */}
+          <h1>Modifier les données de l'utilisateur</h1>
+          <br />
+          {/* Champs de formulaire pour modifier les données de l'utilisateur */}
+          <label htmlFor="nom" className="form-label">
+            Nom
+          </label>
+          <input
+            type="text"
+            id="nom"
+            name="nom"
+            className="form-control"
+            placeholder="Nom"
+            value={user.nom}
+            onChange={handleChange} // Appel de la fonction de gestion des changements
+          />
+          <br />
+          <label htmlFor="prenom" className="form-label">
+            Prénom
+          </label>
+          <input
+            type="text"
+            id="prenom"
+            name="prenom"
+            className="form-control"
+            placeholder="Prénom"
+            value={user.prenom}
+            onChange={handleChange}
+          />
+          <br />
+          <label htmlFor="pseudo" className="form-label">
+            Pseudo
+          </label>
+          <input
+            type="text"
+            id="pseudo"
+            name="pseudo"
+            className="form-control"
+            placeholder="Pseudo"
+            value={user.pseudo}
+            onChange={handleChange}
+          />
+          <br />
+          <br />
+          {/* Bouton pour afficher ou masquer le champ de mot de passe */}
+          <button
+            onClick={() => setShowPasswordInput(!showPasswordInput)}
+            className="btn btn-secondary w-100"
+          >
+            {showPasswordInput
+              ? "Masquer le champ de mot de passe"
+              : "Modifier le mot de passe"}
+          </button>
+          <br />
+          <br />
+          {showPasswordInput && (
             <>
-              <span
-                className="spinner-border spinner-border-sm"
-                role="status"
-                aria-hidden="true"
-              ></span>{" "}
-              Modification...
+              {/* Champ pour modifier le mot de passe */}
+              <label htmlFor="newPassword" className="form-label">
+                Nouveau mot de passe
+              </label>
+              <div className="input-group">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  id="newPassword"
+                  name="newPassword"
+                  className="form-control"
+                  placeholder="Nouveau mot de passe *"
+                  value={user.newPassword}
+                  onChange={handleChange}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="btn btn-outline-secondary"
+                >
+                  {showPassword ? "👁️" : "🙈"}
+                </button>
+              </div>
+              <small className="text-muted">
+                * Laissez vide si vous ne souhaitez pas modifier le mot de
+                passe.
+              </small>
+              <br />
             </>
-          ) : (
-            "Modifier"
           )}
-        </button>
-      </div>
-
+          <br />
+          {/* Bouton pour valider la modification */}
+          <button
+            onClick={() => setShowModal(true)} // Ouvre le modal de confirmation
+            className="btn btn-primary w-100"
+            disabled={loading} // Désactive le bouton pendant le chargement
+          >
+            {loading ? (
+              <>
+                <span
+                  className="spinner-border spinner-border-sm"
+                  role="status"
+                  aria-hidden="true"
+                ></span>{" "}
+                Modification...
+              </>
+            ) : (
+              "Modifier"
+            )}
+          </button>
+        </div>
+      )}
       {/* Modal de confirmation */}
       <ConfirmPopup
         show={showModal}

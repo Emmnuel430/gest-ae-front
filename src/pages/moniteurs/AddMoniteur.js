@@ -34,7 +34,7 @@ const AddMoniteur = () => {
 
     try {
       // Récupération des informations de l'utilisateur connecté
-      const userInfo = JSON.parse(localStorage.getItem("user-info"));
+      const userInfo = JSON.parse(sessionStorage.getItem("user-info"));
       const userId = userInfo ? userInfo.id : null;
 
       if (!userId) {
@@ -57,10 +57,6 @@ const AddMoniteur = () => {
         {
           method: "POST",
           body: JSON.stringify(moniteur),
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
         }
       );
 

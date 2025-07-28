@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import Layout from "../../components/Layout/Layout";
 import Back from "../../components/Layout/Back";
 import ConfirmPopup from "../../components/Layout/ConfirmPopup";
-import ToastMessage from "../../components/Layout/ToastMessage"; // adapte le chemin si besoin
+import ToastMessage from "../../components/Layout/ToastMessage";
 import { fetchWithToken } from "../../utils/fetchWithToken";
+import eventBus from "../../utils/eventBus";
 
 const AddEtudiant = () => {
   // Déclaration des états pour gérer les champs du formulaire
@@ -27,6 +28,24 @@ const AddEtudiant = () => {
   const [error, setError] = useState(""); // Gestion des erreurs
   const [showModal, setShowModal] = useState(false); // Affichage du modal de confirmation
   const navigate = useNavigate();
+  const [tarifs, setTarifs] = useState(null);
+
+  // Chargement des tarifs à l'ouverture du composant
+  useEffect(() => {
+    const fetchTarifs = async () => {
+      try {
+        const response = await fetchWithToken(
+          `${process.env.REACT_APP_API_BASE_URL}/scolarite/tarifs`
+        );
+        const data = await response.json();
+        setTarifs(data);
+      } catch (error) {
+        console.error("Erreur lors du chargement des tarifs", error);
+      }
+    };
+
+    fetchTarifs();
+  }, []);
 
   // Calculer la date minimale autorisée (16 ans avant aujourd'hui)
   const today = new Date();
@@ -39,40 +58,46 @@ const AddEtudiant = () => {
     .split("T")[0];
 
   // Fonction pour calculer la scolarité en fonction des catégories et des options
-  const calculateScolarite = (categories, hasReduction, motif) => {
+  const calculateScolarite = (categories = [], hasReduction, motif) => {
+    if (!tarifs) return 0;
+
     if (motif === "recyclage") {
-      return 60000; // Si motif = recyclage, la scolarité est fixée à 60 000
+      return parseInt(tarifs["scolarite_recyclage"] || 60000);
     }
 
     const categorySet = new Set(categories);
 
     if (hasReduction) {
-      return 25000; // Toutes les catégories coûtent 25k avec réduction
+      return parseInt(tarifs["scolarite_reduction"] || 25000);
     }
 
-    // Utilisation de switch pour les combinaisons
     switch (true) {
       case categorySet.has("A") && categorySet.size === 1:
-        return 30000; // A
+        return parseInt(tarifs["scolarite_A"] || 30000);
+      case categorySet.has("B") && categorySet.size === 1:
+        return parseInt(tarifs["scolarite_B"] || 50000);
       case categorySet.has("A") &&
         categorySet.has("B") &&
         categorySet.size === 2:
-        return 100000; // AB
+        return parseInt(tarifs["scolarite_AB"] || 100000);
       case categorySet.has("B") &&
         categorySet.has("C") &&
         categorySet.has("D") &&
         categorySet.has("E") &&
         categorySet.size === 4:
-        return 120000; // BCDE
+        return parseInt(tarifs["scolarite_BCDE"] || 120000);
       case categorySet.has("A") &&
         categorySet.has("B") &&
         categorySet.has("C") &&
         categorySet.has("D") &&
         categorySet.has("E") &&
         categorySet.size === 5:
-        return 150000; // ABCDE
+        return parseInt(tarifs["scolarite_ABCDE"] || 150000);
       default:
-        return categories.length * 25000; // Chaque catégorie coûte 20k si non définie
+        return (
+          categories.length *
+          parseInt(tarifs["scolarite_par_categorie"] || 25000)
+        );
     }
   };
 
@@ -86,22 +111,18 @@ const AddEtudiant = () => {
     setScolarite(calculatedScolarite);
   }, [selectedCategories, reduction, motifInscription]);
 
+  // Réinitialiser les catégories sélectionnées si le motif d'inscription est "recyclage"
+  useEffect(() => {
+    if (motifInscription === "recyclage") {
+      setSelectedCategories([]);
+    }
+  }, [motifInscription]);
+
   useEffect(() => {
     if (error) {
       handleCloseModal(); // Ferme le modal dès qu'une erreur apparaît
     }
   }, [error]);
-
-  // Gestion des changements dans les catégories sélectionnées
-  const handleCategoryChange = (category, checked) => {
-    if (checked) {
-      setSelectedCategories([...selectedCategories, category]);
-    } else {
-      setSelectedCategories(
-        selectedCategories.filter((cat) => cat !== category)
-      );
-    }
-  };
 
   // Fonction pour fermer le modal
   const handleCloseModal = () => setShowModal(false);
@@ -131,8 +152,8 @@ const AddEtudiant = () => {
     setLoading(true); // Active l'indicateur de chargement
 
     try {
-      // Récupération de l'utilisateur connecté depuis localStorage
-      const userInfo = JSON.parse(localStorage.getItem("user-info"));
+      // Récupération de l'utilisateur connecté depuis sessionStorage
+      const userInfo = JSON.parse(sessionStorage.getItem("user-info"));
       const userId = userInfo ? userInfo.id : null;
 
       if (!userId) {
@@ -171,22 +192,19 @@ const AddEtudiant = () => {
         scolarite: calculatedScolarite, // Ajout de la scolarité calculée
         montant_paye: montantPaye,
         motifInscription,
-        categorie: [selectedCategories], // Convertir les catégories
         idUser: userId,
       };
 
-      console.log(JSON.stringify(etudiant));
-
+      // N’ajoute `categorie` que si c’est un permis
+      if (motifInscription === "permis" && selectedCategories) {
+        etudiant.categorie = [selectedCategories]; // en array, car le backend attend un tableau
+      }
       // Envoi des données à l'API
       let result = await fetchWithToken(
         `${process.env.REACT_APP_API_BASE_URL}/add_etudiant`,
         {
           method: "POST",
           body: JSON.stringify(etudiant),
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
         }
       );
 
@@ -198,6 +216,7 @@ const AddEtudiant = () => {
         return;
       }
 
+      eventBus.emit("rappel_updated");
       setLoading(false);
       alert("Étudiant ajouté avec succès");
       // Réinitialisation des champs
@@ -226,334 +245,268 @@ const AddEtudiant = () => {
   return (
     <Layout>
       <Back>etudiants</Back>
-      <div className="col-sm-6 offset-sm-3 mt-5 px-4">
+
+      <div className="container col-lg-8 offset-lg-2 col-12 mt-5 px-md-0 px-sm-4">
         <h1>Création d'un nouvel étudiant</h1>
-
-        {/* Affichage des messages d'erreur globaux */}
         {error && (
-          <ToastMessage
-            message={error}
-            onClose={() => {
-              setError(null);
-            }}
-          />
+          <ToastMessage message={error} onClose={() => setError(null)} />
         )}
-
-        {/* Description */}
         <p className="text-muted">
           Les champs marqués d'une étoile (*) sont obligatoires.
         </p>
         <br />
 
-        {/* Champ Nom */}
-        <div className="form-group mb-3">
-          <label htmlFor="nom" className="form-label">
-            Nom*
-          </label>
-          <input
-            type="text"
-            id="nom"
-            className={`form-control ${!nom && "is-invalid"}`}
-            placeholder="Nom"
-            value={nom}
-            onChange={(e) => setNom(e.target.value)}
-          />
-          {!nom && (
-            <div className="invalid-feedback">Veuillez entrer le nom.</div>
-          )}
-        </div>
-
-        {/* Champ Prénom */}
-        <div className="form-group mb-3">
-          <label htmlFor="prenom" className="form-label">
-            Prénom*
-          </label>
-          <input
-            type="text"
-            id="prenom"
-            className={`form-control ${!prenom && "is-invalid"}`}
-            placeholder="Prénom"
-            value={prenom}
-            onChange={(e) => setPrenom(e.target.value)}
-          />
-          {!prenom && (
-            <div className="invalid-feedback">Veuillez entrer le prénom.</div>
-          )}
-        </div>
-
-        {/* Champ Date de naissance */}
-        <div className="form-group mb-3">
-          <label htmlFor="dateNaissance" className="form-label">
-            Date de naissance*
-          </label>
-          <input
-            type="date"
-            id="dateNaissance"
-            className={`form-control ${!dateNaissance && "is-invalid"}`}
-            value={dateNaissance}
-            onChange={(e) => setDateNaissance(e.target.value)}
-            max={minDate} // Empêche la sélection de dates inférieures à 16 ans
-          />
-          {!dateNaissance && (
-            <div className="invalid-feedback">
-              Veuillez entrer la date de naissance.
-            </div>
-          )}
-        </div>
-
-        {/* Champ Lieu de naissance */}
-        <div className="form-group mb-3">
-          <label htmlFor="lieuNaissance" className="form-label">
-            Lieu de naissance
-          </label>
-          <input
-            type="text"
-            id="lieuNaissance"
-            className="form-control"
-            placeholder="Lieu de naissance"
-            value={lieuNaissance}
-            onChange={(e) => setLieuNaissance(e.target.value)}
-          />
-        </div>
-
-        {/* Champ Type de pièce */}
-        <div className="form-group mb-3">
-          <label htmlFor="typePiece" className="form-label">
-            Type de pièce d'identité*
-          </label>
-          <select
-            id="typePiece"
-            className={`form-control ${!typePiece && "is-invalid"}`}
-            value={typePiece}
-            onChange={(e) => setTypePiece(e.target.value)}
-          >
-            <option value="">Sélectionnez un type</option>
-            <option value="CNI">CNI</option>
-            <option value="Passeport">Passeport</option>
-            <option value="Carte Consulaire">Carte Consulaire</option>
-            <option value="Attestation">Attestation</option>
-            <option value="Permis">Permis</option>
-            <option value="Autre">Autre</option>
-          </select>
-          {!typePiece && (
-            <div className="invalid-feedback">
-              Veuillez sélectionner le type de pièce.
-            </div>
-          )}
-        </div>
-
-        {/* Champ Numéro de pièce */}
-        <div className="form-group mb-3">
-          <label htmlFor="numPiece" className="form-label">
-            Numéro de pièce d'identité*
-          </label>
-          <input
-            type="text"
-            id="numPiece"
-            className={`form-control ${!numPiece && "is-invalid"}`}
-            placeholder="Numéro de pièce d'identité"
-            value={numPiece}
-            onChange={(e) => setNumPiece(e.target.value)}
-          />
-          {!numPiece && (
-            <div className="invalid-feedback">
-              Veuillez entrer le numéro de pièce.
-            </div>
-          )}
-        </div>
-
-        {/* Champ Commune */}
-        <div className="form-group mb-3">
-          <label htmlFor="commune" className="form-label">
-            Commune*
-          </label>
-          <input
-            type="text"
-            id="commune"
-            className={`form-control ${!commune && "is-invalid"}`}
-            placeholder="Commune"
-            value={commune}
-            onChange={(e) => setCommune(e.target.value)}
-          />
-          {!commune && (
-            <div className="invalid-feedback">Veuillez entrer la commune.</div>
-          )}
-        </div>
-
-        {/* Champ Numéro de téléphone principal */}
-        <div className="form-group mb-3">
-          <label htmlFor="numTelephone" className="form-label">
-            Numéro de téléphone*
-          </label>
-          <input
-            type="number"
-            id="numTelephone"
-            className={`form-control ${!numTelephone && "is-invalid"}`}
-            placeholder="Numéro de téléphone"
-            value={numTelephone}
-            onChange={(e) => setNumTelephone(e.target.value)}
-          />
-          {!numTelephone && (
-            <div className="invalid-feedback">
-              Veuillez entrer un numéro de téléphone.
-            </div>
-          )}
-        </div>
-
-        {/* Champ Numéro de téléphone secondaire */}
-        <div className="form-group mb-3">
-          <label htmlFor="numTelephone2" className="form-label">
-            Numéro de téléphone secondaire
-          </label>
-          <input
-            type="number"
-            id="numTelephone2"
-            className="form-control"
-            placeholder="Numéro de téléphone secondaire"
-            value={numTelephone2}
-            onChange={(e) => setNumTelephone2(e.target.value)}
-          />
-        </div>
-        <span>------------------------------------------------------</span>
-
-        {/* Champ Nom de l'auto-école */}
-        <div className="form-group mb-3">
-          <label htmlFor="nomAutoEc" className="form-label">
-            Nom de l'auto-école*
-          </label>
-          <select
-            id="nomAutoEc"
-            className={`form-control ${!nomAutoEc && "is-invalid"}`}
-            value={nomAutoEc}
-            onChange={(e) => setNomAutoEc(e.target.value)}
-          >
-            <option value="">Sélectionnez une auto-école</option>
-            <option value="Patrimoine">Patrimoine</option>
-            <option value="Autre">Autre</option>
-          </select>
-          {nomAutoEc === "Autre" && (
+        {/* Identité */}
+        <div className="row">
+          <div className="col-md-6 mb-3">
+            <label>Nom*</label>
             <input
               type="text"
-              className="form-control mt-2"
-              placeholder="Nom de l'auto-école"
-              value={lieuNaissance} // Utiliser une nouvelle variable si nécessaire
-              onChange={(e) => setLieuNaissance(e.target.value)}
+              className={`form-control ${!nom && "is-invalid"}`}
+              value={nom}
+              onChange={(e) => setNom(e.target.value)}
             />
-          )}
-          {!nomAutoEc && (
-            <div className="invalid-feedback">
-              Veuillez sélectionner ou entrer le nom de l'auto-école.
-            </div>
-          )}
-        </div>
-
-        {/* Champ Motif d'inscription */}
-        <div className="form-group mb-3">
-          <label htmlFor="motifInscription" className="form-label">
-            Motif d'inscription*
-          </label>
-          <select
-            id="motifInscription"
-            className="form-control"
-            value={motifInscription}
-            onChange={(e) => setMotifInscription(e.target.value)}
-          >
-            <option value="">Sélectionnez un motif</option>
-            <option value="permis">Candidat au permis</option>
-            <option value="recyclage">Recyclage</option>
-          </select>
-        </div>
-
-        {/* Champ Réduction */}
-        <div className="d-flex align-items-center mb-3">
-          <label className="form-label me-3">Réduction*</label>
-          <div className="form-check form-switch">
+            {!nom && (
+              <div className="invalid-feedback">Veuillez entrer le nom.</div>
+            )}
+          </div>
+          <div className="col-md-6 mb-3">
+            <label>Prénom*</label>
             <input
-              className="form-check-input"
-              type="checkbox"
-              id="reductionSwitch"
-              checked={reduction}
-              onChange={(e) => setReduction(e.target.checked)}
+              type="text"
+              className={`form-control ${!prenom && "is-invalid"}`}
+              value={prenom}
+              onChange={(e) => setPrenom(e.target.value)}
             />
-            <label className="form-check-label" htmlFor="reductionSwitch">
-              {reduction ? "Oui" : "Non"}
-            </label>
+            {!prenom && (
+              <div className="invalid-feedback">Veuillez entrer le prénom.</div>
+            )}
           </div>
         </div>
 
-        {/* Champ Catégories */}
-        <div className="form-group mb-3">
-          <label>Catégories de permis*</label>
-          {["A", "B", "AB", "BCDE", "ABCDE", "CDE"].map((category) => (
-            <div className="form-check" key={category}>
+        {/* Naissance */}
+        <div className="row">
+          <div className="col-md-6 mb-3">
+            <label>Date de naissance*</label>
+            <input
+              type="date"
+              className={`form-control ${!dateNaissance && "is-invalid"}`}
+              value={dateNaissance}
+              onChange={(e) => setDateNaissance(e.target.value)}
+              max={minDate}
+            />
+            {!dateNaissance && (
+              <div className="invalid-feedback">Veuillez entrer la date.</div>
+            )}
+          </div>
+          <div className="col-md-6 mb-3">
+            <label>Lieu de naissance</label>
+            <input
+              type="text"
+              className="form-control"
+              value={lieuNaissance}
+              onChange={(e) => setLieuNaissance(e.target.value)}
+            />
+          </div>
+        </div>
+
+        {/* Pièce d'identité */}
+        <div className="row">
+          <div className="col-md-6 mb-3">
+            <label>Type de pièce*</label>
+            <select
+              className={`form-control ${!typePiece && "is-invalid"}`}
+              value={typePiece}
+              onChange={(e) => setTypePiece(e.target.value)}
+            >
+              <option value="">Sélectionnez un type</option>
+              <option value="CNI">CNI</option>
+              <option value="Passeport">Passeport</option>
+              <option value="Carte Consulaire">Carte Consulaire</option>
+              <option value="Attestation">Attestation</option>
+              <option value="Permis">Permis</option>
+              <option value="Autre">Autre</option>
+            </select>
+            {!typePiece && (
+              <div className="invalid-feedback">Champ requis.</div>
+            )}
+          </div>
+          <div className="col-md-6 mb-3">
+            <label>Numéro de pièce*</label>
+            <input
+              type="text"
+              className={`form-control ${!numPiece && "is-invalid"}`}
+              value={numPiece}
+              onChange={(e) => setNumPiece(e.target.value)}
+            />
+            {!numPiece && <div className="invalid-feedback">Champ requis.</div>}
+          </div>
+        </div>
+
+        {/* Coordonnées */}
+        <div className="row">
+          <div className="col-md-6 mb-3">
+            <label>Commune*</label>
+            <input
+              type="text"
+              className={`form-control ${!commune && "is-invalid"}`}
+              value={commune}
+              onChange={(e) => setCommune(e.target.value)}
+            />
+            {!commune && <div className="invalid-feedback">Champ requis.</div>}
+          </div>
+          <div className="col-md-6 mb-3">
+            <label>Téléphone*</label>
+            <input
+              type="number"
+              className={`form-control ${!numTelephone && "is-invalid"}`}
+              value={numTelephone}
+              onChange={(e) => setNumTelephone(e.target.value)}
+            />
+            {!numTelephone && (
+              <div className="invalid-feedback">Champ requis.</div>
+            )}
+          </div>
+        </div>
+
+        <div className="row">
+          <div className="col-md-6 mb-3">
+            <label>Téléphone secondaire</label>
+            <input
+              type="number"
+              className="form-control"
+              value={numTelephone2}
+              onChange={(e) => setNumTelephone2(e.target.value)}
+            />
+          </div>
+          <div className="col-md-6 mb-3">
+            <label>Auto-école*</label>
+            <select
+              className={`form-control ${!nomAutoEc && "is-invalid"}`}
+              value={nomAutoEc}
+              onChange={(e) => setNomAutoEc(e.target.value)}
+            >
+              <option value="">Sélectionnez</option>
+              <option value="Patrimoine">Patrimoine</option>
+              <option value="Autre">Autre</option>
+            </select>
+            {nomAutoEc === "Autre" && (
               <input
-                type="radio"
-                id={`category-${category}`}
-                name="permis-category"
-                className="form-check-input"
-                value={category}
-                onChange={(e) => setSelectedCategories(e.target.value)}
-                checked={selectedCategories === category}
-                disabled={motifInscription === "recyclage"}
+                type="text"
+                className="form-control mt-2"
+                placeholder="Nom de l'auto-école"
+                value={lieuNaissance}
+                onChange={(e) => setLieuNaissance(e.target.value)}
               />
-              <label
-                htmlFor={`category-${category}`}
-                className="form-check-label"
-              >
-                {category}
+            )}
+            {!nomAutoEc && (
+              <div className="invalid-feedback">Champ requis.</div>
+            )}
+          </div>
+        </div>
+
+        {/* Motif et réduction */}
+        <div className="row">
+          <div className="col-md-6 mb-3">
+            <label>Motif d'inscription*</label>
+            <select
+              className={`form-control ${!motifInscription && "is-invalid"}`}
+              value={motifInscription}
+              onChange={(e) => setMotifInscription(e.target.value)}
+            >
+              <option value="">Sélectionnez</option>
+              <option value="permis">Permis</option>
+              <option value="recyclage">Recyclage</option>
+            </select>
+            {!motifInscription && (
+              <div className="invalid-feedback">
+                Veuillez sélectionner le motif d'inscription.
+              </div>
+            )}
+          </div>
+          <div className="col-md-6 mb-3 d-flex align-items-center">
+            <label className="me-3">Réduction*</label>
+            <div className="form-check form-switch">
+              <input
+                className="form-check-input"
+                type="checkbox"
+                id="reductionSwitch"
+                checked={reduction}
+                onChange={(e) => setReduction(e.target.checked)}
+              />
+              <label className="form-check-label" htmlFor="reductionSwitch">
+                {reduction ? "Oui" : "Non"}
               </label>
             </div>
-          ))}
+          </div>
         </div>
 
-        {/* Montant */}
+        {/* Catégories */}
         <div className="form-group mb-3">
-          {/* Scolarité */}
-          <label htmlFor="scolarite" className="form-label">
-            Montant à payer*
-          </label>
-          <input
-            type="text"
-            id="scolarite"
-            className="form-control"
-            value={scolarite}
-            readOnly
-          />
+          <label>Catégories de permis*</label>
+          <div className="d-flex flex-wrap">
+            {["A", "B", "AB", "BCDE", "ABCDE", "CDE"].map((category) => (
+              <div className="form-check me-3" key={category}>
+                <input
+                  type="radio"
+                  id={`category-${category}`}
+                  name="permis-category"
+                  className="form-check-input"
+                  value={category}
+                  onChange={(e) => setSelectedCategories(e.target.value)}
+                  checked={selectedCategories === category}
+                  disabled={motifInscription === "recyclage"}
+                />
+                <label
+                  htmlFor={`category-${category}`}
+                  className="form-check-label"
+                >
+                  {category}
+                </label>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div className="form-group mb-3">
-          <label htmlFor="montant_paye" className="form-">
-            Montant payé*
-          </label>
-          <input
-            type="number"
-            id="montant_paye"
-            className="form-control"
-            placeholder="Montant payé"
-            value={montantPaye}
-            onChange={(e) => {
-              const value = parseInt(e.target.value, 10);
-              if (value <= parseInt(scolarite, 10)) {
-                setMontantPaye(e.target.value);
-              }
-            }}
-            max={scolarite}
-          />
+        {/* Paiement */}
+        <div className="row">
+          <div className="col-md-6 mb-3">
+            <label>Montant à payer*</label>
+            <input
+              type="text"
+              className="form-control"
+              value={scolarite}
+              readOnly
+            />
+          </div>
+          <div className="col-md-6 mb-3">
+            <label>Montant payé*</label>
+            <input
+              type="number"
+              className="form-control"
+              value={montantPaye}
+              onChange={(e) => {
+                const value = parseInt(e.target.value, 10);
+                if (value <= parseInt(scolarite, 10))
+                  setMontantPaye(e.target.value);
+              }}
+              max={scolarite}
+            />
+          </div>
         </div>
 
-        {/* Alerte de paiement en retard */}
+        {/* Alerte solde */}
         {montantPaye &&
           scolarite &&
           Number(scolarite) > Number(montantPaye) && (
             <div className="alert alert-warning">
-              Attention : L'étudiant n'a pas soldé le montant total dû. Reste à
-              payer : {Number(scolarite) - Number(montantPaye)} FCFA
+              Reste à payer : {Number(scolarite) - Number(montantPaye)} FCFA
             </div>
           )}
 
-        {/* Bouton Ajouter */}
+        {/* Bouton */}
         <button
-          onClick={() => setShowModal(true)} // Affiche le modal à l'appui du bouton
+          onClick={() => setShowModal(true)}
           className="btn btn-primary w-100"
           disabled={
             !nom ||
@@ -568,7 +521,7 @@ const AddEtudiant = () => {
         >
           Ajouter
         </button>
-        {/* Utilisation du ConfirmPopup */}
+
         <ConfirmPopup
           show={showModal}
           onClose={handleCloseModal}
@@ -576,18 +529,16 @@ const AddEtudiant = () => {
           title="Confirmer l'ajout"
           body={
             <p>
-              Êtes-vous sûr de vouloir ajouter l'etudiant suivant ?
-              <br />
+              Êtes-vous sûr de vouloir ajouter l'étudiant suivant ?<br />
               <strong>Nom :</strong> {nom} <br />
               <strong>Prénom :</strong> {prenom} <br />
               <strong>Motif :</strong>{" "}
-              {motifInscription == "permis"
-                ? "Candidat(e) au permis"
-                : "Recyclage de conduite"}
+              {motifInscription === "permis" ? "Permis" : "Recyclage"}
             </p>
           }
         />
       </div>
+
       <br />
       <br />
     </Layout>

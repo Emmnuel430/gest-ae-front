@@ -87,7 +87,7 @@ const Statistiques = () => {
                       className="text-body mb-0 h2 text-center"
                       title={new Intl.NumberFormat("fr-FR", {
                         useGrouping: true,
-                      }).format(totaux.totalMontantPaye)}
+                      }).format(totaux.totalMontantPaye || 0)}
                     >
                       <strong>
                         <em>

@@ -28,11 +28,15 @@ import ProgrammationList from "./pages/programmation/ProgrammationList";
 import AddProgrammation from "./pages/programmation/AddProgrammation";
 import Recap from "./pages/programmation/Recap";
 
+import ScrollToTop from "./components/ScrollToTop";
+import Parametres from "./pages/Parametres";
+
 // Définition du composant AppRoutes qui va gérer les routes de l'application
 const AppRoutes = () => {
   return (
     // Utilisation de BrowserRouter pour permettre la navigation côté client
     <BrowserRouter>
+      <ScrollToTop />
       {/* Définition des différentes routes et des composants associés */}
       <Routes>
         {/* Route pour la page d'accueil qui renvoie vers la page de connexion */}
@@ -101,6 +105,10 @@ const AppRoutes = () => {
         {/* ------------------ */}
         <Route path="/global" element={<Protected Cmp={Global} adminOnly />} />
         <Route path="/logs" element={<Protected Cmp={Logs} adminOnly />} />
+        <Route
+          path="/parametres"
+          element={<Protected Cmp={Parametres} adminOnly />}
+        />
 
         {/* Si l'URL n'est pas définie, renvoyer l'utilisateur vers la page de connexion */}
         <Route path="*" element={<Login />} />

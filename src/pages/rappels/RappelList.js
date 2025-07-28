@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Table, Spinner, Modal } from "react-bootstrap";
+import { Table, Modal } from "react-bootstrap";
 import Layout from "../../components/Layout/Layout";
 import ConfirmPopup from "../../components/Layout/ConfirmPopup";
 import HeaderWithFilter from "../../components/Layout/HeaderWithFilter";
@@ -9,6 +9,7 @@ import AddRappel from "./AddRappel";
 import { Link } from "react-router-dom"; // Importer Link pour la navigation
 import RappelImportant from "./RappelImportant"; // Importer le nouveau composant
 import { fetchWithToken } from "../../utils/fetchWithToken";
+import eventBus from "../../utils/eventBus";
 
 const Rappels = () => {
   const [rappels, setRappels] = useState([]);
@@ -53,7 +54,7 @@ const Rappels = () => {
   const handleDelete = async () => {
     if (!selectedRappel) return;
 
-    const userInfo = JSON.parse(localStorage.getItem("user-info")); // Récupère les infos utilisateur
+    const userInfo = JSON.parse(sessionStorage.getItem("user-info")); // Récupère les infos utilisateur
     const userId = userInfo ? userInfo.id : null; // Vérifie si l'utilisateur est connecté
 
     if (!userId) {
@@ -67,15 +68,13 @@ const Rappels = () => {
         `${process.env.REACT_APP_API_BASE_URL}/delete_rappel/${selectedRappel.id}`,
         {
           method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
           body: JSON.stringify({ idUser: userId }), // Remplacez 1 par l'ID utilisateur réel
         }
       );
 
       if (!response.ok) throw new Error("Échec de la suppression");
 
+      eventBus.emit("rappel_updated");
       setRappels((prevRappels) =>
         prevRappels.filter((rappel) => rappel.id !== selectedRappel.id)
       );

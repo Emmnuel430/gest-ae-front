@@ -1,7 +1,12 @@
 // components/ToastMessage.jsx
 import { useEffect, useState } from "react";
 
-export default function ToastMessage({ message, onClose, duration = 4000 }) {
+export default function ToastMessage({
+  message,
+  onClose,
+  duration = 4000,
+  success = false,
+}) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -9,7 +14,7 @@ export default function ToastMessage({ message, onClose, duration = 4000 }) {
       setVisible(true);
       const timer = setTimeout(() => {
         setVisible(false);
-        setTimeout(onClose, 500); // correspond à la durée de la transition
+        setTimeout(onClose, 500); // attendre l'animation avant de retirer du DOM
       }, duration);
       return () => clearTimeout(timer);
     }
@@ -20,7 +25,9 @@ export default function ToastMessage({ message, onClose, duration = 4000 }) {
   return (
     <>
       <div
-        className={`toast-message ${visible ? "show" : "hide"}`}
+        className={`toast-message ${visible ? "show" : "hide"} ${
+          success ? "success" : "error"
+        }`}
         style={{ zIndex: 1055 }}
       >
         {message}
@@ -32,14 +39,21 @@ export default function ToastMessage({ message, onClose, duration = 4000 }) {
             top: 0;
             left: 50%;
             transform: translateX(-50%) translateY(-20px);
-            margin-top: 1rem;
+            margin-top: 2rem;
             padding: 0.75rem 1rem;
-            background-color: #dc3545; /* Bootstrap danger */
             color: white;
             border-radius: 0.5rem;
             box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
             opacity: 0;
             transition: opacity 0.5s ease, transform 0.5s ease;
+          }
+
+          .toast-message.success {
+            background-color: #28a745; /* Bootstrap success */
+          }
+
+          .toast-message.error {
+            background-color: #dc3545; /* Bootstrap danger */
           }
 
           .toast-message.show {

@@ -1,4 +1,5 @@
 import React from "react"; // Importation de React pour utiliser JSX et les fonctionnalités React.
+import { Link } from "react-router-dom";
 import userImg from "../../assets/img/user.png"; // Importation de l'image de profil par défaut.
 import logo from "../../assets/img/minlogo.png"; // Importation du logo de l'application.
 import SidebarLinks from "./SidebarLinks"; // Importation du composant SidebarLinks qui contient les liens de la barre latérale.
@@ -10,7 +11,7 @@ const Sidebar = ({ user }) => {
     <div className="sidebar b-bar d-flex pb-3 bg-body">
       <div className="navbar bg-body navbar-body">
         {/* Partie logo et nom de l'application */}
-        <a href="#" className="navbar-brand mx-4 mb-3 d-flex align-items-end">
+        <Link to="/" className="navbar-brand mx-4 mb-3 d-flex align-items-end">
           <img
             src={logo} // Affichage du logo de l'application
             alt="Logo"
@@ -21,9 +22,9 @@ const Sidebar = ({ user }) => {
           <h3 className="m-0 ps-2" style={{ color: "#ed3731" }}>
             {" "}
             {/* Affichage du titre "Gest" */}
-            <strong>Gest v1.2</strong>
+            <strong>Gest v2</strong>
           </h3>
-        </a>
+        </Link>
         {/* Section profil utilisateur */}
         <div className="d-flex align-items-center ms-4 mb-4">
           <div className="position-relative">

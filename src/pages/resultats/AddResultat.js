@@ -6,6 +6,7 @@ import Back from "../../components/Layout/Back";
 import ConfirmPopup from "../../components/Layout/ConfirmPopup";
 import ToastMessage from "../../components/Layout/ToastMessage";
 import { fetchWithToken } from "../../utils/fetchWithToken";
+import eventBus from "../../utils/eventBus";
 
 const AddResultat = () => {
   const navigate = useNavigate();
@@ -99,7 +100,7 @@ const AddResultat = () => {
 
     try {
       // Récupérer l'ID de l'utilisateur connecté
-      const userInfo = JSON.parse(localStorage.getItem("user-info"));
+      const userInfo = JSON.parse(sessionStorage.getItem("user-info"));
       const userId = userInfo ? userInfo.id : null;
 
       if (!userId) {
@@ -117,10 +118,6 @@ const AddResultat = () => {
         {
           method: "POST",
           body: JSON.stringify(payload),
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
         }
       );
 
@@ -133,6 +130,7 @@ const AddResultat = () => {
         return;
       }
 
+      eventBus.emit("rappel_updated");
       alert("Résultat ajouté avec succès");
       // Réinitialiser le formulaire après l'ajout
       setResultat({ idEtudiant: "", libelle: "", statut: false });

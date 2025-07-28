@@ -31,7 +31,6 @@ const Moniteur = () => {
 
         const data = await response.json(); // Conversion des données en JSON
         setMoniteur(data); // Mise à jour de l'état avec les données du moniteur
-        console.log(data); // Affichage des données dans la console pour le débogage
       } catch (err) {
         setError("Impossible de charger les données : " + err.message); // Gestion des erreurs
       } finally {
@@ -108,7 +107,14 @@ const Moniteur = () => {
                       <li className="mb-2">
                         <i className="fas fa-phone-alt me-2 text-secondary"></i>
                         <strong>Téléphone :</strong>{" "}
-                        {formatPhoneNumber(moniteur.moniteur.num_telephone) || (
+                        {moniteur.moniteur.num_telephone ? (
+                          <a
+                            href={`tel:${moniteur.moniteur.num_telephone}`}
+                            className="text-decoration-none"
+                          >
+                            {formatPhoneNumber(moniteur.moniteur.num_telephone)}
+                          </a>
+                        ) : (
                           <span className="text-muted">Non disponible</span>
                         )}
                       </li>
@@ -116,15 +122,29 @@ const Moniteur = () => {
                       {moniteur.moniteur.num_telephone_2 && (
                         <li className="mb-2">
                           <i className="fas fa-phone me-2 text-secondary"></i>
-                          <strong>Sécondaire :</strong>{" "}
-                          {formatPhoneNumber(moniteur.moniteur.num_telephone_2)}
+                          <strong>Secondaire :</strong>{" "}
+                          <a
+                            href={`tel:${moniteur.moniteur.num_telephone_2}`}
+                            className="text-decoration-none"
+                          >
+                            {formatPhoneNumber(
+                              moniteur.moniteur.num_telephone_2
+                            )}
+                          </a>
                         </li>
                       )}
 
                       <li className="mb-2">
                         <i className="fas fa-envelope me-2 text-secondary"></i>
                         <strong>Email :</strong>{" "}
-                        {moniteur.moniteur.email || (
+                        {moniteur.moniteur.email ? (
+                          <a
+                            href={`mailto:${moniteur.moniteur.email}`}
+                            className="text-decoration-none"
+                          >
+                            {moniteur.moniteur.email}
+                          </a>
+                        ) : (
                           <span className="text-muted">Non renseigné</span>
                         )}
                       </li>

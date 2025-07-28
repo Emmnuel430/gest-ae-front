@@ -27,8 +27,11 @@ const EtudiantList = () => {
   const [filter, setFilter] = useState(""); // Filtre pour les étudiants
   const [showModal, setShowModal] = useState(false); // Contrôle l'affichage du modal de confirmation
   const [searchQuery, setSearchQuery] = useState(""); // Requête de recherche pour filtrer les étudiants
+  const [trierParSolde, setTrierParSolde] = useState(false);
+
   const navigate = useNavigate(); // Navigation entre les pages
-  const userInfo = JSON.parse(localStorage.getItem("user-info"));
+  const userInfo = JSON.parse(sessionStorage.getItem("user-info"));
+  const userRole = userInfo ? userInfo.role : null;
 
   // Effet pour charger les étudiants et mettre à jour le temps périodiquement
   useEffect(() => {
@@ -227,6 +230,20 @@ const EtudiantList = () => {
               alphaField="nom" // Peut être "prenom", "titre", etc.
               dateField="created_at" // Peut être "dateInscription", "dateAjout"
             />
+            <div className="form-check form-switch mb-3">
+              <label className="form-check-label" htmlFor="switchSolde">
+                Afficher les non soldés en haut
+              </label>
+
+              <input
+                className="form-check-input"
+                type="checkbox"
+                id="switchSolde"
+                checked={trierParSolde}
+                onChange={(e) => setTrierParSolde(e.target.checked)}
+              />
+            </div>
+
             <Table
               style={{ tableLayout: "auto" }}
               className="centered-table"
@@ -237,11 +254,10 @@ const EtudiantList = () => {
                 <tr>
                   <th>#</th>
                   <th>ID</th>
-                  <th>Nom</th>
-                  <th>Prénom</th>
+                  <th>Nom & Prénom</th>
                   <th>Scolarité</th>
                   <th>Etape</th>
-                  <th>Bon</th>
+                  <th>Réduction</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -250,15 +266,17 @@ const EtudiantList = () => {
                 {currentEtudiants.length > 0 ? (
                   currentEtudiants
                     .sort((a, b) => {
+                      if (!trierParSolde) return 0;
                       const aSolde = a.montant_paye == a.scolarite;
                       const bSolde = b.montant_paye == b.scolarite;
                       if (aSolde === bSolde) return 0;
-                      return aSolde ? 1 : -1; // Si a est soldé, il passe en bas
+                      return aSolde ? 1 : -1; // Soldé en bas
                     })
                     .map((etudiant, index) => {
                       const isDisabled =
+                        userRole === false &&
                         etudiant?.progression?.etape ===
-                        "programmé_pour_la_conduite";
+                          "programmé_pour_la_conduite";
 
                       return (
                         <tr
@@ -267,8 +285,10 @@ const EtudiantList = () => {
                         >
                           <td>{index + 1}</td>
                           <td>ETU-{etudiant.id}</td>
-                          <td>{etudiant.nom}</td>
-                          <td>{etudiant.prenom}</td>
+                          <td className="text-uppercase">
+                            <strong>{etudiant.nom}</strong>{" "}
+                            {etudiant.prenom.split(" ")[0]}
+                          </td>
                           <td>
                             {etudiant.montant_paye == etudiant.scolarite ? (
                               <span className="badge bg-success">Soldé</span>
@@ -292,7 +312,9 @@ const EtudiantList = () => {
                           </td>
                           <td>
                             {etudiant.reduction && (
-                              <span className="badge bg-warning ms-1">Oui</span>
+                              <span className="badge bg-warning text-dark ms-1">
+                                Oui
+                              </span>
                             )}
                           </td>
                           <td className="table-operations">
@@ -304,6 +326,10 @@ const EtudiantList = () => {
                                 }
                                 className="btn btn-info btn-sm me-2"
                                 title="Voir"
+                                disabled={isDisabled}
+                                style={
+                                  isDisabled ? { cursor: "not-allowed" } : {}
+                                }
                               >
                                 <i className="fas fa-eye"></i>
                               </button>
@@ -314,6 +340,10 @@ const EtudiantList = () => {
                                 }
                                 className="btn btn-warning btn-sm me-2"
                                 title="Modifier"
+                                disabled={isDisabled}
+                                style={
+                                  isDisabled ? { cursor: "not-allowed" } : {}
+                                }
                               >
                                 <i className="fas fa-edit"></i>
                               </button>
@@ -322,7 +352,10 @@ const EtudiantList = () => {
                                 onClick={() => handleOpenModal(etudiant)}
                                 className="btn btn-danger btn-sm"
                                 title="Supprimer"
-                                disabled={loading === etudiant.id}
+                                disabled={loading === etudiant.id || isDisabled}
+                                style={
+                                  isDisabled ? { cursor: "not-allowed" } : {}
+                                }
                               >
                                 <i className="fas fa-trash"></i>
                               </button>

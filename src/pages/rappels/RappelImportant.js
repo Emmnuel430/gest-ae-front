@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { format, formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import Loader from "../../components/Layout/Loader";
@@ -9,6 +9,8 @@ const RappelImportant = () => {
   const [rappels, setRappels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [filtrePriorite, setFiltrePriorite] = useState("tous"); // "toutes", "élevée", "moyenne", "basse"
+
   const navigate = useNavigate(); // Navigation entre les pages
 
   useEffect(() => {
@@ -19,7 +21,7 @@ const RappelImportant = () => {
         );
         const data = await response.json();
 
-        setRappels(data.rappelActifs);
+        setRappels(data.rappels);
         setLoading(false);
       } catch (err) {
         setError("Erreur lors de la récupération des rappels.");
@@ -31,7 +33,14 @@ const RappelImportant = () => {
   }, []);
 
   if (loading) {
-    return <Loader />;
+    return (
+      <div
+        className="d-flex justify-content-center align-items-center"
+        style={{ height: "60vh" }} // Centrer Loader au milieu de l'écran
+      >
+        <Loader />
+      </div>
+    );
   }
 
   if (error) {
@@ -80,10 +89,15 @@ const RappelImportant = () => {
 
   const totalRappels = rappels.length;
 
+  const rappelsFiltres = rappels.filter((rappel) => {
+    if (filtrePriorite === "tous") return true;
+    return rappel.priorite === filtrePriorite;
+  });
+
   return (
     <div className="bg-body rounded p-4">
-      <div className="d-flex align-items-center justify-content-between mb-2">
-        <div className="mb-0 d-flex align-items-center">
+      <div className="d-flex flex-column flex-md-row align-items-center justify-content-between mb-2">
+        <div className="mb-0 d-flex  align-items-center">
           <h4 className="mb-0 me-2">Rappels Importants ({totalRappels})</h4>
           <span className="rounded rounded-circle border border-danger bg-danger-subtle text-danger p-2 me-2">
             {rappelsPrioriteElevee}
@@ -95,12 +109,49 @@ const RappelImportant = () => {
             {rappelsPrioriteFaible}
           </span>
         </div>
-        {/* <a href="/rappels-complets">Voir tout</a> */}
+        <div className="my-3 d-flex gap-2">
+          <button
+            className={`btn btn-sm ${
+              filtrePriorite === "tous" ? "btn-primary" : "btn-outline-primary"
+            }`}
+            onClick={() => setFiltrePriorite("tous")}
+          >
+            Tous
+          </button>
+          <button
+            className={`btn btn-sm ${
+              filtrePriorite === "élevée" ? "btn-danger" : "btn-outline-danger"
+            }`}
+            onClick={() => setFiltrePriorite("élevée")}
+          >
+            Élevée
+          </button>
+          <button
+            className={`btn btn-sm ${
+              filtrePriorite === "moyenne"
+                ? "btn-warning text-white"
+                : "btn-outline-warning"
+            }`}
+            onClick={() => setFiltrePriorite("moyenne")}
+          >
+            Moyenne
+          </button>
+          <button
+            className={`btn btn-sm ${
+              filtrePriorite === "basse"
+                ? "btn-secondary"
+                : "btn-outline-secondary"
+            }`}
+            onClick={() => setFiltrePriorite("basse")}
+          >
+            Basse
+          </button>
+        </div>
       </div>
-      {rappels.length === 0 ? (
+      {rappelsFiltres.length === 0 ? (
         <div>Aucun rappel important.</div>
       ) : (
-        rappels
+        rappelsFiltres
           .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
           .map((rappel, index) => (
             <div

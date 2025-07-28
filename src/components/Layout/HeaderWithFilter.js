@@ -32,6 +32,10 @@ const HeaderWithFilter = ({
         return;
       }
 
+      if (sortOption === "updated_desc" && dateField) {
+        sorted.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+      }
+
       if (sortOption === "alpha" && alphaField) {
         sorted.sort((a, b) =>
           (a[alphaField] || "").localeCompare(b[alphaField] || "")
@@ -153,6 +157,9 @@ const HeaderWithFilter = ({
               <option value="date_semaine">Créé cette semaine</option>
               <option value="date_mois">Créé ce mois-ci</option>
               <option value="date_annee">Créé cette année</option>
+              {dateField && (
+                <option value="updated_desc">Dernière mise à jour</option>
+              )}
             </select>
           </div>
         </div>

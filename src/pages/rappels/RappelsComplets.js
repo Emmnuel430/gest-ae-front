@@ -8,6 +8,7 @@ import Loader from "../../components/Layout/Loader";
 import { format, formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import RappelUpdate from "./RappelUpdate"; // Import du nouveau composant
+import RappelHistorique from "./RappelHistorique"; // Import du nouveau composant
 import { fetchWithToken } from "../../utils/fetchWithToken";
 
 const RappelsComplets = () => {
@@ -56,7 +57,7 @@ const RappelsComplets = () => {
   const handleDelete = async () => {
     if (!selectedRappel) return;
 
-    const userInfo = JSON.parse(localStorage.getItem("user-info")); // Récupère les infos utilisateur
+    const userInfo = JSON.parse(sessionStorage.getItem("user-info")); // Récupère les infos utilisateur
     const userId = userInfo ? userInfo.id : null; // Vérifie si l'utilisateur est connecté
 
     if (!userId) {
@@ -70,9 +71,6 @@ const RappelsComplets = () => {
         `${process.env.REACT_APP_API_BASE_URL}/delete_rappel/${selectedRappel.id}`,
         {
           method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
           body: JSON.stringify({ idUser: userId }), // Remplacez 1 par l'ID utilisateur réel
         }
       );
@@ -107,9 +105,6 @@ const RappelsComplets = () => {
         `${process.env.REACT_APP_API_BASE_URL}/update_rappel/${updatedRappel.id}`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
           body: JSON.stringify(updatedRappel),
         }
       );
@@ -184,7 +179,7 @@ const RappelsComplets = () => {
           <>
             <Back>rappels</Back>
             <HeaderWithFilter
-              title="Rappels"
+              title2="Historique des Rappels"
               main={rappels.length || null}
               filter={filter}
               setFilter={setFilter}
@@ -290,6 +285,8 @@ const RappelsComplets = () => {
                 )}
               </tbody>
             </Table>
+
+            <RappelHistorique />
           </>
         )}
 

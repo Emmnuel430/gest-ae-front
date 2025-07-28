@@ -3,23 +3,30 @@ import React from "react";
 import "../../assets/css/Home.css"; // Importation du fichier CSS pour la mise en page
 import HomeScript from "../../assets/js/HomeScript"; // Importation d'un script personnalisé pour la page
 import loginImage from "../../assets/img/user.png"; // Importation d'une image pour le profil utilisateur
-import { useNavigate } from "react-router-dom"; // Importation de 'useNavigate' pour la navigation
+import { useNavigate, Link } from "react-router-dom"; // Importation de 'useNavigate' pour la navigation
 import logo from "../../assets/img/minlogo.png"; // Importation du logo de l'application.
 import Sidebar from "./Sidebar"; // Importation du composant Sidebar
 import ThemeSwitcher from "../others/ThemeSwitcher"; // Importation du composant ThemeSwitcher
 import { fetchWithToken } from "../../utils/fetchWithToken";
+import useRappelCount from "../hooks/useRappelCount";
+import useIdleLogout from "../../utils/useIdleLogout";
 
 // Définition du composant Layout qui sera utilisé comme un modèle de page (avec du contenu dynamique via 'children')
 const Layout = ({ children }) => {
-  // Récupération des informations de l'utilisateur depuis le localStorage (si elles existent)
-  let user = JSON.parse(localStorage.getItem("user-info"));
+  useIdleLogout(20);
+
+  // Récupération des informations de l'utilisateur depuis le sessionStorage (si elles existent)
+  let user = JSON.parse(sessionStorage.getItem("user-info"));
+  const [load, setLoad] = React.useState(false); // État pour gérer le chargement (non utilisé dans ce code, mais peut être utile pour des opérations asynchrones)
+  const totalRappels = useRappelCount();
 
   // Utilisation de 'useNavigate' pour effectuer des redirections dans l'application
   const navigate = useNavigate();
 
-  // Fonction de déconnexion qui efface les informations de l'utilisateur du localStorage et redirige vers la page de connexion
+  // Fonction de déconnexion qui efface les informations de l'utilisateur du sessionStorage et redirige vers la page de connexion
   async function logOut() {
     try {
+      setLoad(true);
       await fetchWithToken(`${process.env.REACT_APP_API_BASE_URL}/logout`, {
         method: "POST",
       });
@@ -28,7 +35,7 @@ const Layout = ({ children }) => {
     } finally {
       setLoad(false);
       // Nettoyage et redirection
-      localStorage.clear();
+      sessionStorage.clear();
       navigate("/");
     }
   }
@@ -75,29 +82,57 @@ const Layout = ({ children }) => {
           {/* Section de la barre de navigation avec notifications et messages */}
           <div className="navbar-nav align-items-center ms-auto">
             {/* Notification d'alertes */}
-            <div className="nav-item dropdown">
-              <button type="button" className="nav-link dropdown-toggle btn">
-                <i className="fa fa-bell me-lg-2"></i>
+            <div className="nav-item dropdown d-block d-lg-none">
+              <button
+                type="button"
+                className="nav-link dropdown-toggle btn"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                {/* Cloche + Badge à l’intérieur du <i> */}
+                <span className="position-relative me-lg-2">
+                  <i className="fa fa-bell"></i>
+
+                  {totalRappels > 0 && (
+                    <span
+                      className="position-absolute top-0 start-0 translate-middle badge rounded-pill bg-danger"
+                      style={{ fontSize: "0.7rem" }}
+                    >
+                      {totalRappels > 99 ? "99+" : totalRappels}
+                    </span>
+                  )}
+                </span>
+
+                {/* Texte à côté de la cloche */}
                 <span className="d-none d-lg-inline-flex items text-body">
                   Alertes
                 </span>
               </button>
-              <div className="dropdown-menu dropdown-menu-end bg-body border-0 rounded-bottom m-0">
-                <div className="dropdown-item">
-                  <div className="d-flex align-items-center">
-                    {/* Image de profil de l'expéditeur */}
-                    <img
-                      src={loginImage}
-                      alt="Profile"
-                      className="rounded-circle"
-                      width="40"
-                      height="40"
-                    />
-                    <div className="ms-2">
-                      <h6 className="text-body">John sent you a message</h6>
+
+              <div className="dropdown-menu dropdown-menu-end bg-body border-0 rounded-bottom m-0 p-0">
+                {totalRappels > 0 ? (
+                  <Link to="/rappels" className="dropdown-item p-0">
+                    <div className="d-flex align-items-center m-0 p-0">
+                      {/* <img
+                        src={loginImage}
+                        alt="Profile"
+                        className="rounded-circle"
+                        width="40"
+                        height="40"
+                      /> */}
+                      <div className="alert alert-danger m-0">
+                        <h6 className="text-body mb-0">Voir les rappels</h6>
+                        <small className="text-muted">
+                          {totalRappels > 1
+                            ? `Vous avez ${totalRappels} rappels en cours`
+                            : "Vous avez 1 rappel"}
+                        </small>
+                      </div>
                     </div>
-                  </div>
-                </div>
+                  </Link>
+                ) : (
+                  <div className="dropdown-item text-muted">Aucune alerte</div>
+                )}
               </div>
             </div>
 
@@ -122,13 +157,19 @@ const Layout = ({ children }) => {
                 </a>
                 {/* Menu déroulant avec l'option de déconnexion */}
                 <div className="dropdown-menu dropdown-menu-end bg-body border-0 rounded-bottom m-0">
-                  <a
-                    href="#"
+                  <button
+                    type="button"
                     className="dropdown-item text-body"
                     onClick={logOut}
                   >
-                    Déconnexion
-                  </a>
+                    {load ? (
+                      <span>
+                        <i className="fas fa-spinner fa-spin"></i> Chargement...
+                      </span>
+                    ) : (
+                      <span>Déconnexion</span>
+                    )}
+                  </button>
                 </div>
               </div>
             )}
@@ -136,20 +177,26 @@ const Layout = ({ children }) => {
         </nav>
 
         {/* Contenu dynamique de la page, qui sera fourni par le parent (via 'children') */}
-        <div className="p-2">{children}</div>
-        <br />
-        <br />
+        <div className="p-2 min-vh-100">{children}</div>
+        <div className="footer px-4 pt-4 mt-5">
+          <div className="bg-body">
+            <div className="row small">
+              <div className="col-12 col-sm-6 text-center text-sm-start">
+                &copy; {new Date().getFullYear()} <Link to="/">Gest</Link>,
+                AsNumeric - J/E. Tous droits réservés.
+              </div>
+              <div className="col-12 col-sm-6 text-center text-sm-end text-muted ">
+                Designed By <Link to="/">Joel E. Daho</Link>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      <br />
-      <br />
 
       {/* Bouton de retour en haut de la page */}
-      <a
-        href="#"
-        className="btn btn-lg btn-primary btn-lg-square back-to-top hide"
-      >
+      <button className="btn btn-lg btn-primary btn-lg-square back-to-top hide">
         <i className="bi bi-arrow-up"></i>
-      </a>
+      </button>
 
       {/* Script spécifique à la page Home */}
       <HomeScript />

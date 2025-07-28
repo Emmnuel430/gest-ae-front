@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import Layout from "../../components/Layout/Layout";
 import Back from "../../components/Layout/Back";
 import ToastMessage from "../../components/Layout/ToastMessage";
+import { fetchWithToken } from "../../utils/fetchWithToken";
 
 const AddProgrammation = () => {
   const location = useLocation();
@@ -21,7 +22,7 @@ const AddProgrammation = () => {
 
   // Chargement de la liste des étudiants en fonction du type sélectionné
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_API_BASE_URL}/liste_etudiant`)
+    fetchWithToken(`${process.env.REACT_APP_API_BASE_URL}/liste_etudiant`)
       .then((res) => res.json())
       .then((data) => {
         // Filtrage des étudiants en fonction du type de programmation

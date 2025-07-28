@@ -20,8 +20,8 @@ const UserList = () => {
   const [searchQuery, setSearchQuery] = useState(""); // Requête de recherche pour filtrer les users
   const navigate = useNavigate(); // Hook pour la navigation
 
-  // Récupérer l'ID de l'utilisateur connecté à partir du localStorage
-  const userInfo = JSON.parse(localStorage.getItem("user-info"));
+  // Récupérer l'ID de l'utilisateur connecté à partir du sessionStorage
+  const userInfo = JSON.parse(sessionStorage.getItem("user-info"));
   const userId = userInfo ? userInfo.id : null; // ID de l'utilisateur connecté
 
   // Récupérer la liste des utilisateurs lors du premier rendu
@@ -72,7 +72,6 @@ const UserList = () => {
         `${process.env.REACT_APP_API_BASE_URL}/delete_user/${selectedUser.id}?user_id=${userId}`,
         {
           method: "DELETE", // Méthode de suppression
-          headers: { "Content-Type": "application/json" }, // Headers
         }
       );
 

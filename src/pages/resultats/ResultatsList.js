@@ -78,7 +78,7 @@ const Resultats = () => {
   // Fonction pour retirer un résultat (mettre à jour le statut)
   const handleRetirer = async () => {
     if (!selectedResultat) return; // Si aucun résultat n'est sélectionné, on ne fait rien
-    const userInfo = JSON.parse(localStorage.getItem("user-info")); // Récupérer l'utilisateur connecté
+    const userInfo = JSON.parse(sessionStorage.getItem("user-info")); // Récupérer l'utilisateur connecté
     const userId = userInfo ? userInfo.id : null;
 
     if (!userId) {
@@ -92,9 +92,6 @@ const Resultats = () => {
         `${process.env.REACT_APP_API_BASE_URL}/update_resultat/${selectedResultat.id}`,
         {
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
           body: JSON.stringify({
             idUser: userId, // ID de l'utilisateur effectuant l'action
             statut: true, // Mark as retiré
@@ -125,7 +122,7 @@ const Resultats = () => {
   const handleDelete = async () => {
     if (!selectedResultat) return; // Si aucun résultat n'est sélectionné, on ne fait rien
 
-    const userInfo = JSON.parse(localStorage.getItem("user-info"));
+    const userInfo = JSON.parse(sessionStorage.getItem("user-info"));
     const userId = userInfo ? userInfo.id : null;
 
     if (!userId) {
@@ -138,9 +135,6 @@ const Resultats = () => {
         `${process.env.REACT_APP_API_BASE_URL}/delete_resultat/${selectedResultat.id}`,
         {
           method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
           body: JSON.stringify({
             idUser: userId, // ID de l'utilisateur effectuant l'action
           }),

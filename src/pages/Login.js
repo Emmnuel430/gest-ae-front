@@ -13,7 +13,7 @@ const Login = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (localStorage.getItem("user-info")) {
+    if (sessionStorage.getItem("user-info")) {
       navigate("/home"); // Redirige si l'utilisateur est déjà connecté
     }
   }, []);
@@ -51,8 +51,8 @@ const Login = () => {
       }
 
       // Stocke les informations utilisateur si la connexion réussit
-      localStorage.setItem("user-info", JSON.stringify(result.user));
-      localStorage.setItem("token", result.access_token); // Stocke le token d'accès si nécessaire
+      sessionStorage.setItem("user-info", JSON.stringify(result.user));
+      sessionStorage.setItem("token", result.access_token); // Stocke le token d'accès si nécessaire
 
       setLoading(false); // Désactive l'état de chargement
       navigate("/home"); // Redirige vers la page d'accueil ou tableau de bord

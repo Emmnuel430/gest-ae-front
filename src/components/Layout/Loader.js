@@ -4,7 +4,11 @@ import "../../assets/css/Loader.css"; // Importation du fichier CSS pour le styl
 const Loader = () => {
   return (
     <div className="d-flex justify-content-center align-items-center">
-      <div className="loader"></div>
+      <div className="loader">
+        {"Gest...".split("").map((letter, index) => (
+          <span key={index}>{letter}</span>
+        ))}
+      </div>
     </div>
   );
 };
