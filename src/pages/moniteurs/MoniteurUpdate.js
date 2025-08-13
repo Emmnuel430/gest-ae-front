@@ -15,6 +15,10 @@ const MoniteurUpdate = () => {
     nom: "",
     prenom: "",
     specialite: "",
+    num_telephone: "",
+    num_telephone_2: "",
+    email: "",
+    commune: "",
   });
 
   const [error, setError] = useState(""); // Stocke les erreurs
@@ -46,6 +50,10 @@ const MoniteurUpdate = () => {
         nom: data.moniteur.nom || "",
         prenom: data.moniteur.prenom || "",
         specialite: data.moniteur.specialite || "",
+        num_telephone: data.moniteur.num_telephone || "",
+        num_telephone_2: data.moniteur.num_telephone_2 || "",
+        email: data.moniteur.email || "",
+        commune: data.moniteur.commune || "",
       });
     } catch (error) {
       console.error("Erreur lors de la récupération du moniteur:", error);
@@ -129,7 +137,7 @@ const MoniteurUpdate = () => {
               id="nom"
               name="nom"
               className="form-control"
-              placeholder="Nom"
+              placeholder="Ex : Koffi"
               value={moniteur.nom}
               onChange={handleChange}
             />
@@ -144,7 +152,7 @@ const MoniteurUpdate = () => {
               id="prenom"
               name="prenom"
               className="form-control"
-              placeholder="Prénom"
+              placeholder="Ex : Paul"
               value={moniteur.prenom}
               onChange={handleChange}
             />
@@ -167,6 +175,61 @@ const MoniteurUpdate = () => {
             </select>
             <br />
 
+            <label htmlFor="num_telephone" className="form-label">
+              N° Telephone
+            </label>
+            <input
+              type="number"
+              id="num_telephone"
+              name="num_telephone"
+              className="form-control"
+              placeholder="Ex : 0011223344"
+              value={moniteur.num_telephone}
+              onChange={handleChange}
+            />
+            <br />
+
+            <label htmlFor="num_telephone_2" className="form-label">
+              N° Telephone (sécondaire)
+            </label>
+            <input
+              type="number"
+              id="num_telephone_2"
+              name="num_telephone_2"
+              className="form-control"
+              placeholder="Ex : 0011223344"
+              value={moniteur.num_telephone_2}
+              onChange={handleChange}
+            />
+            <br />
+
+            <label htmlFor="email" className="form-label">
+              Email
+            </label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              className="form-control"
+              placeholder="Ex : koffi.paul@gmail.com"
+              value={moniteur.email}
+              onChange={handleChange}
+            />
+            <br />
+
+            <label htmlFor="commune" className="form-label">
+              Commune
+            </label>
+            <input
+              type="text"
+              id="commune"
+              name="commune"
+              className="form-control"
+              placeholder="Ex : Plateau"
+              value={moniteur.commune}
+              onChange={handleChange}
+            />
+            <br />
             {/* Bouton de modification */}
             <button
               onClick={() => setShowModal(true)} // Affiche la boîte de confirmation

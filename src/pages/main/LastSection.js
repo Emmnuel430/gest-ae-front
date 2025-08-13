@@ -244,51 +244,53 @@ const LastSection = () => {
               </div>
             </div>
             {/* Derniers logs */}
-            <div className="col-sm-12 col-md-6 col-xl-4">
-              <div className="h-100 bg-body rounded border p-4">
-                <div className="d-flex align-items-center justify-content-between mb-4">
-                  <h6 className="mb-0">Logs</h6>
-                  {userInfo?.role && <Link to="/logs">Voir</Link>}
-                </div>
-                <div className="d-flex flex-column align-items-center">
-                  {userInfo?.role ? (
-                    logs.length > 0 ? (
-                      <>
-                        <Table hover className="centered-table w-100">
-                          <tbody>
-                            {logs.map((log, index) => (
-                              <tr key={index}>
-                                <td>
-                                  <span
-                                    className={`${getActionColor(
-                                      log.action
-                                    )} text-uppercase text-white rounded-pill px-2 py-1`}
-                                  >
-                                    {getActionLabel(log.action)}
-                                  </span>
-                                </td>
-                                <td className="text-capitalize">
-                                  {log.table_concernee}
-                                </td>
-                                <td>{formatDateRelative(log.created_at)}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </Table>
-                      </>
+            {userInfo?.role && (
+              <div className="col-sm-12 col-md-6 col-xl-4">
+                <div className="h-100 bg-body rounded border p-4">
+                  <div className="d-flex align-items-center justify-content-between mb-4">
+                    <h6 className="mb-0">Logs</h6>
+                    {userInfo?.role && <Link to="/logs">Voir</Link>}
+                  </div>
+                  <div className="d-flex flex-column align-items-center">
+                    {userInfo?.role ? (
+                      logs.length > 0 ? (
+                        <>
+                          <Table hover className="centered-table w-100">
+                            <tbody>
+                              {logs.map((log, index) => (
+                                <tr key={index}>
+                                  <td>
+                                    <span
+                                      className={`${getActionColor(
+                                        log.action
+                                      )} text-uppercase text-white rounded-pill px-2 py-1`}
+                                    >
+                                      {getActionLabel(log.action)}
+                                    </span>
+                                  </td>
+                                  <td className="text-capitalize">
+                                    {log.table_concernee}
+                                  </td>
+                                  <td>{formatDateRelative(log.created_at)}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </Table>
+                        </>
+                      ) : (
+                        <div className="text-center text-muted h-100 d-flex align-items-center justify-content-center">
+                          Aucun log disponible.
+                        </div>
+                      )
                     ) : (
-                      <div className="text-center text-muted h-100 d-flex align-items-center justify-content-center">
-                        Aucun log disponible.
+                      <div className="text-center text-danger h-100 d-flex align-items-center justify-content-center">
+                        Vous n'avez pas les droits pour voir les logs.
                       </div>
-                    )
-                  ) : (
-                    <div className="text-center text-danger h-100 d-flex align-items-center justify-content-center">
-                      Vous n'avez pas les droits pour voir les logs.
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
             {/* Rappels */}
             <div className="col-sm-12 col-md-6 col-xl-4">
               <div className="h-100 bg-body rounded border p-4">

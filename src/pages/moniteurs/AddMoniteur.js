@@ -9,7 +9,11 @@ const AddMoniteur = () => {
   // États pour gérer les champs du formulaire et les interactions
   const [nom, setNom] = useState(""); // Nom du moniteur
   const [prenom, setPrenom] = useState(""); // Prénom du moniteur
-  const [specialite, setSpecialite] = useState(""); // Spécialité du moniteur
+  const [specialite, setSpecialite] = useState(""); // Prénom du moniteur
+  const [numTelephone, setNumTelephone] = useState(""); // Spécialité du moniteur
+  const [numTelephone2, setNumTelephone2] = useState(""); // Spécialité du moniteur
+  const [email, setEmail] = useState(""); // Spécialité du moniteur
+  const [commune, setCommune] = useState(""); // Spécialité du moniteur
   const [loading, setLoading] = useState(false); // Indicateur de chargement
   const [error, setError] = useState(""); // Message d'erreur
   const [showModal, setShowModal] = useState(false); // État pour afficher ou cacher le modal
@@ -48,6 +52,10 @@ const AddMoniteur = () => {
         nom,
         prenom,
         specialite,
+        numTelephone,
+        numTelephone2,
+        email,
+        commune,
         user_id: userId,
       };
 
@@ -92,35 +100,40 @@ const AddMoniteur = () => {
         {/* Affichage des messages d'erreur */}
         {error && <div className="alert alert-danger">{error}</div>}
 
+        <p className="text-muted">
+          Les champs marqués d'une étoile (*) sont obligatoires.
+        </p>
+        <br />
+
         {/* Formulaire pour ajouter un moniteur */}
         <label htmlFor="nom" className="form-label">
-          Nom
+          Nom *
         </label>
         <input
           type="text"
           id="nom"
           className="form-control"
-          placeholder="Nom"
+          placeholder="Entrer le nom"
           value={nom}
           onChange={(e) => setNom(e.target.value)}
         />
         <br />
 
         <label htmlFor="prenom" className="form-label">
-          Prénom
+          Prénom *
         </label>
         <input
           type="text"
           id="prenom"
           className="form-control"
-          placeholder="Prénom"
+          placeholder="Entrer le(s) prénom(s)"
           value={prenom}
           onChange={(e) => setPrenom(e.target.value)}
         />
         <br />
 
         <label htmlFor="specialite" className="form-label">
-          Spécialité
+          Spécialité *
         </label>
         <select
           id="specialite"
@@ -132,6 +145,62 @@ const AddMoniteur = () => {
           <option value="code">Code</option>
           <option value="conduite">Conduite</option>
         </select>
+        <br />
+
+        <label htmlFor="num_telephone" className="form-label">
+          N° Telephone
+        </label>
+        <input
+          type="number"
+          id="num_telephone"
+          name="num_telephone"
+          className="form-control"
+          placeholder="Ex : 0011223344"
+          value={numTelephone}
+          onChange={(e) => setNumTelephone(e.target.value)}
+        />
+        <br />
+
+        <label htmlFor="num_telephone_2" className="form-label">
+          N° Telephone (sécondaire)
+        </label>
+        <input
+          type="number"
+          id="num_telephone_2"
+          name="num_telephone_2"
+          className="form-control"
+          placeholder="Ex : 0011223344"
+          value={numTelephone2}
+          onChange={(e) => setNumTelephone2(e.target.value)}
+        />
+        <br />
+
+        <label htmlFor="email" className="form-label">
+          Email
+        </label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          className="form-control"
+          placeholder="Ex : koffi.paul@gmail.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <br />
+
+        <label htmlFor="commune" className="form-label">
+          Commune
+        </label>
+        <input
+          type="text"
+          id="commune"
+          name="commune"
+          className="form-control"
+          placeholder="Ex : Plateau"
+          value={commune}
+          onChange={(e) => setCommune(e.target.value)}
+        />
         <br />
 
         {/* Bouton pour soumettre le formulaire */}

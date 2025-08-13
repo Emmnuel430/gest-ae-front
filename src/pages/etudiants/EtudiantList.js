@@ -27,7 +27,10 @@ const EtudiantList = () => {
   const [filter, setFilter] = useState(""); // Filtre pour les étudiants
   const [showModal, setShowModal] = useState(false); // Contrôle l'affichage du modal de confirmation
   const [searchQuery, setSearchQuery] = useState(""); // Requête de recherche pour filtrer les étudiants
-  const [trierParSolde, setTrierParSolde] = useState(false);
+  const [trierParSolde, setTrierParSolde] = useState(() => {
+    const saved = sessionStorage.getItem("trierParSolde");
+    return saved ? JSON.parse(saved) : false;
+  });
 
   const navigate = useNavigate(); // Navigation entre les pages
   const userInfo = JSON.parse(sessionStorage.getItem("user-info"));
@@ -44,14 +47,31 @@ const EtudiantList = () => {
   }, [location]); // Déclenche l'effet lors d'un changement de localisation
 
   useEffect(() => {
-    if (!Array.isArray(etudiants)) return; // Sécurité : vérifie que etudiants est un tableau
-    // Tri par défaut du plus récent au plus ancien
+    if (!Array.isArray(etudiants)) return; // Sécurité
+
     setSortedEtudiants(
-      [...etudiants].sort(
-        (a, b) => new Date(b.created_at) - new Date(a.created_at)
-      )
+      [...etudiants].sort((a, b) => {
+        // Si trierParSolde est activé
+        if (trierParSolde) {
+          const aSolde = a.montant_paye == a.scolarite;
+          const bSolde = b.montant_paye == b.scolarite;
+
+          // Les non soldés en haut
+          if (aSolde !== bSolde) {
+            return aSolde ? 1 : -1;
+          }
+        }
+
+        // Sinon (ou si soldés identiques) → tri par date (du plus récent au plus ancien)
+        return new Date(b.created_at) - new Date(a.created_at);
+      })
     );
-  }, [etudiants]); // Déclenche le tri lorsque la liste des étudiants change
+  }, [etudiants, trierParSolde]); // On relance si liste OU filtre change
+
+  // Sauvegarde automatique à chaque changement
+  useEffect(() => {
+    sessionStorage.setItem("trierParSolde", JSON.stringify(trierParSolde));
+  }, [trierParSolde]);
 
   // Fonction pour ouvrir le modal de confirmation
   const handleOpenModal = (etudiant) => {
@@ -230,6 +250,7 @@ const EtudiantList = () => {
               alphaField="nom" // Peut être "prenom", "titre", etc.
               dateField="created_at" // Peut être "dateInscription", "dateAjout"
             />
+
             <div className="form-check form-switch mb-3">
               <label className="form-check-label" htmlFor="switchSolde">
                 Afficher les non soldés en haut
@@ -264,106 +285,121 @@ const EtudiantList = () => {
               <tbody>
                 {/* Filtrage et affichage des étudiants */}
                 {currentEtudiants.length > 0 ? (
-                  currentEtudiants
-                    .sort((a, b) => {
-                      if (!trierParSolde) return 0;
-                      const aSolde = a.montant_paye == a.scolarite;
-                      const bSolde = b.montant_paye == b.scolarite;
-                      if (aSolde === bSolde) return 0;
-                      return aSolde ? 1 : -1; // Soldé en bas
-                    })
-                    .map((etudiant, index) => {
-                      const isDisabled =
-                        userRole === false &&
-                        etudiant?.progression?.etape ===
-                          "programmé_pour_la_conduite";
+                  currentEtudiants.map((etudiant, index) => {
+                    const isDisabled =
+                      etudiant?.progression?.etape === "terminé";
 
-                      return (
-                        <tr
-                          key={index}
-                          style={isDisabled ? { opacity: 0.5 } : {}}
-                        >
-                          <td>{index + 1}</td>
-                          <td>ETU-{etudiant.id}</td>
-                          <td className="text-uppercase">
-                            <strong>{etudiant.nom}</strong>{" "}
-                            {etudiant.prenom.split(" ")[0]}
-                          </td>
-                          <td>
-                            {etudiant.montant_paye == etudiant.scolarite ? (
-                              <span className="badge bg-success">Soldé</span>
-                            ) : (
-                              <span className="badge bg-danger">Pas soldé</span>
-                            )}
-                          </td>
-                          <td>
-                            {etudiant.progression?.etape ? (
-                              <span
-                                className={`badge text-white bg-primary`}
-                                style={{ whiteSpace: "pre-line" }}
-                              >
-                                {formatEtape(etudiant.progression.etape)}
-                              </span>
-                            ) : (
-                              <span className="badge bg-secondary text-white">
-                                N/A
-                              </span>
-                            )}
-                          </td>
-                          <td>
-                            {etudiant.reduction && (
-                              <span className="badge bg-warning text-dark ms-1">
-                                Oui
-                              </span>
-                            )}
-                          </td>
-                          <td className="table-operations">
-                            <div className="d-flex align-items-stretch justify-content-center gap-2 h-100">
-                              {/* Bouton pour voir les détails */}
-                              <button
-                                onClick={() =>
-                                  navigate(`/etudiant/${etudiant.id}`)
-                                }
-                                className="btn btn-info btn-sm me-2"
-                                title="Voir"
-                                disabled={isDisabled}
-                                style={
-                                  isDisabled ? { cursor: "not-allowed" } : {}
-                                }
-                              >
-                                <i className="fas fa-eye"></i>
-                              </button>
-                              {/* Bouton pour modifier */}
-                              <button
-                                onClick={() =>
-                                  navigate(`/update/etudiant/${etudiant.id}`)
-                                }
-                                className="btn btn-warning btn-sm me-2"
-                                title="Modifier"
-                                disabled={isDisabled}
-                                style={
-                                  isDisabled ? { cursor: "not-allowed" } : {}
-                                }
-                              >
-                                <i className="fas fa-edit"></i>
-                              </button>
-                              {/* Bouton pour supprimer */}
-                              <button
-                                onClick={() => handleOpenModal(etudiant)}
-                                className="btn btn-danger btn-sm"
-                                title="Supprimer"
-                                disabled={loading === etudiant.id || isDisabled}
-                                style={
-                                  isDisabled ? { cursor: "not-allowed" } : {}
-                                }
-                              >
-                                <i className="fas fa-trash"></i>
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })
+                    const isNotUpdatable = userRole === false && isDisabled;
+                    return (
+                      <tr
+                        key={index}
+                        style={isDisabled ? { opacity: 0.5 } : {}}
+                      >
+                        <td>{index + 1}</td>
+                        <td>
+                          ETU-{etudiant.id}
+                          {etudiant.motif_inscription === "recyclage"
+                            ? "-R"
+                            : ""}
+                        </td>
+                        <td className="text-uppercase">
+                          <strong>{etudiant.nom.split(" ")[0]}</strong>{" "}
+                          {etudiant.prenom.split(" ")[0]}
+                        </td>
+                        <td>
+                          {etudiant.montant_paye == etudiant.scolarite ? (
+                            <span className="badge bg-success">Soldé</span>
+                          ) : (
+                            <span className="badge bg-danger">Pas soldé</span>
+                          )}
+                        </td>
+                        <td>
+                          {etudiant.progression?.etape ? (
+                            <span
+                              className={`badge text-white bg-primary`}
+                              style={{ whiteSpace: "pre-line" }}
+                            >
+                              {formatEtape(etudiant.progression.etape)}
+                            </span>
+                          ) : (
+                            <span className="badge bg-secondary text-white">
+                              N/A
+                            </span>
+                          )}
+                        </td>
+                        <td>
+                          {etudiant.reduction && (
+                            <span className="badge bg-warning text-dark ms-1">
+                              Oui
+                            </span>
+                          )}
+                        </td>
+                        <td className="table-operations">
+                          <div className="d-flex align-items-stretch justify-content-center gap-2 h-100">
+                            {/* Bouton pour voir */}
+                            <button
+                              onClick={() =>
+                                navigate(`/etudiant/${etudiant.id}`)
+                              }
+                              className="btn btn-info btn-sm me-2"
+                              title="Voir"
+                              disabled={isNotUpdatable}
+                              style={
+                                isNotUpdatable
+                                  ? {
+                                      cursor: "not-allowed",
+                                      pointerEvents: "auto",
+                                    }
+                                  : {}
+                              }
+                            >
+                              <i className="fas fa-eye"></i>
+                            </button>
+
+                            {/* Bouton pour modifier */}
+                            <button
+                              onClick={() =>
+                                navigate(`/update/etudiant/${etudiant.id}`)
+                              }
+                              className="btn btn-warning btn-sm me-2"
+                              title="Modifier"
+                              disabled={isNotUpdatable}
+                              style={
+                                isNotUpdatable
+                                  ? {
+                                      cursor: "not-allowed",
+                                      pointerEvents: "auto",
+                                    }
+                                  : {}
+                              }
+                            >
+                              <i className="fas fa-edit"></i>
+                            </button>
+
+                            {/* Bouton pour supprimer */}
+                            <button
+                              onClick={() => handleOpenModal(etudiant)}
+                              className="btn btn-danger btn-sm"
+                              title="Supprimer"
+                              disabled={
+                                loading === etudiant.id || isNotUpdatable
+                              }
+                              style={
+                                isNotUpdatable
+                                  ? {
+                                      cursor: "not-allowed",
+                                      pointerEvents: "auto",
+                                    }
+                                  : {}
+                              }
+                            >
+                              <i className="fas fa-trash"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
                 ) : (
                   <tr>
                     <td colSpan="9" className="text-center">

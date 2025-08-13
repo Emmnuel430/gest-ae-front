@@ -2,9 +2,10 @@ export async function fetchWithToken(url, options = {}) {
   const token = sessionStorage.getItem("token");
 
   const headers = {
-    "Content-Type": "application/json",
     Accept: "application/json",
-    ...(options.headers || {}),
+    ...(options.body instanceof FormData
+      ? {}
+      : { "Content-Type": "application/json" }),
     Authorization: `Bearer ${token}`,
   };
 

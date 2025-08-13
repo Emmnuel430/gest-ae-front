@@ -126,6 +126,8 @@ const Layout = ({ children }) => {
                           {totalRappels > 1
                             ? `Vous avez ${totalRappels} rappels en cours`
                             : "Vous avez 1 rappel"}
+                          <br />
+                          Cliquez pour voir
                         </small>
                       </div>
                     </div>

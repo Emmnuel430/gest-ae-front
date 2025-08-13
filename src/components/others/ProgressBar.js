@@ -1,6 +1,6 @@
 import React from "react";
 
-const ProgressBar = ({ currentStep, motifInscription }) => {
+const ProgressBar = ({ currentStep, motifInscription, moniteur }) => {
   // Liste des étapes par défaut
   const defaultSteps = [
     {
@@ -15,27 +15,27 @@ const ProgressBar = ({ currentStep, motifInscription }) => {
       key: "visite_médicale",
       color: "warning",
       bgColor: "warning",
-      percentage: 10,
+      percentage: 5,
     },
     {
       name: "Cours de Code",
       key: "cours_de_code",
       color: "info",
       bgColor: "info",
-      percentage: 30,
+      percentage: 25,
     },
     {
-      name: "Examen de Code",
-      key: "examen_de_code",
-      color: "success",
-      bgColor: "success",
+      name: "Prêt pour Examen de Code",
+      key: "prêt_pour_examen_code",
+      color: "secondary",
+      bgColor: "secondary",
       percentage: 10,
     },
     {
       name: "Programmé pour le Code",
       key: "programmé_pour_le_code",
       color: "success",
-      bgColor: "success-subtle",
+      bgColor: "success",
       percentage: 5,
     },
     {
@@ -46,18 +46,25 @@ const ProgressBar = ({ currentStep, motifInscription }) => {
       percentage: 25,
     },
     {
-      name: "Examen de Conduite",
-      key: "examen_de_conduite",
-      color: "success",
-      bgColor: "success",
+      name: "Prêt pour Examen de Conduite",
+      key: "prêt_pour_examen_conduite",
+      color: "secondary",
+      bgColor: "secondary",
       percentage: 10,
     },
     {
       name: "Programmé pour la conduite",
       key: "programmé_pour_la_conduite",
       color: "success",
-      bgColor: "success-subtle",
+      bgColor: "success",
       percentage: 5,
+    },
+    {
+      name: "Terminé",
+      key: "terminé",
+      color: "muted",
+      bgColor: "dark",
+      percentage: 10,
     },
   ];
 
@@ -68,28 +75,35 @@ const ProgressBar = ({ currentStep, motifInscription }) => {
       key: "inscription",
       color: "primary",
       bgColor: "primary",
-      percentage: 33,
+      percentage: 30,
     },
     {
       name: "Cours de Conduite",
       key: "cours_de_conduite",
       color: "info",
       bgColor: "info",
-      percentage: 33,
+      percentage: 30,
     },
     {
-      name: "Examen de Conduite",
-      key: "examen_de_conduite",
-      color: "success",
-      bgColor: "success",
-      percentage: 30,
+      name: "Prêt pour Examen de Conduite",
+      key: "prêt_pour_examen_conduite",
+      color: "secondary",
+      bgColor: "secondary",
+      percentage: 20,
     },
     {
       name: "Programmé pour la conduite",
       key: "programmé_pour_la_conduite",
       color: "success",
-      bgColor: "success-subtle",
-      percentage: 4,
+      bgColor: "success",
+      percentage: 10,
+    },
+    {
+      name: "Terminé",
+      key: "terminé",
+      color: "muted",
+      bgColor: "dark",
+      percentage: 10,
     },
   ];
 
@@ -129,10 +143,20 @@ const ProgressBar = ({ currentStep, motifInscription }) => {
         </span>
       </h5>
 
-      {/* Affichage du pourcentage total atteint */}
-      <h6 className="text-center mb-3">
-        Progression totale : <span className="fw-bold">{totalPercentage}%</span>
-      </h6>
+      {/* Affichage du moniteur */}
+      {(currentStep === "cours_de_code" ||
+        currentStep === "cours_de_conduite") && (
+        <p className="text-center mb-3 mb-0">
+          <strong>Moniteur(trice) :</strong>{" "}
+          {moniteur?.nom ? (
+            <>
+              {moniteur.nom} {moniteur.prenom}
+            </>
+          ) : (
+            <span className="text-muted">Non affecté</span>
+          )}
+        </p>
+      )}
 
       {/* Barre de progression */}
       <div className="progress">
@@ -152,6 +176,11 @@ const ProgressBar = ({ currentStep, motifInscription }) => {
           </div>
         ))}
       </div>
+
+      {/* Affichage du pourcentage total atteint */}
+      <h6 className="text-center mt-3">
+        Taux d'achevement : <span className="fw-bold">{totalPercentage}%</span>
+      </h6>
 
       {/* Style supplémentaire */}
       <style jsx="true">{`

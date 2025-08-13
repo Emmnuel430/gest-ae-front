@@ -216,9 +216,7 @@ const Resultats = () => {
                   <th>#</th>
                   <th>Retiré</th>
                   <th>Statut</th>
-                  <th>ID Étudiant</th>
-                  <th>Nom</th>
-                  <th>Prénom</th>
+                  <th>Nom & Prénom</th>
                   <th>Type</th>
                   <th>Date d'enregistrement</th>
                   <th>Actions</th>
@@ -256,18 +254,23 @@ const Resultats = () => {
                             <span className="badge bg-danger">Non Retiré</span>
                           )}
                         </td>
-                        <td>etu-{resultat.idEtudiant}</td>
-                        <td>{resultat.etudiant?.nom || "N/A"}</td>
-                        <td>{resultat.etudiant?.prenom || "N/A"}</td>
+                        <td className="text-uppercase">
+                          <strong>
+                            {resultat.etudiant?.nom.split(" ")[0]}
+                          </strong>{" "}
+                          {resultat.etudiant?.prenom.split(" ")[0]}
+                        </td>
 
-                        <td
-                          className={`text-uppercase ${
-                            resultat.libelle === "code"
-                              ? "bg-info text-white"
-                              : "bg-warning text-white"
-                          }`}
-                        >
-                          {resultat.libelle}
+                        <td className={`text-uppercase`}>
+                          {resultat.libelle === "code" ? (
+                            <span className="badge bg-info">
+                              {resultat.libelle}
+                            </span>
+                          ) : (
+                            <span className="badge bg-warning text-dark">
+                              {resultat.libelle}
+                            </span>
+                          )}
                         </td>
                         <td>
                           {format(
@@ -275,14 +278,6 @@ const Resultats = () => {
                             "dd/MM/yyyy HH:mm:ss"
                           )}
                         </td>
-                        {/* <td>
-                      {resultat.updated_at === resultat.created_at
-                        ? "-"
-                        : format(
-                            new Date(resultat.updated_at),
-                            "dd/MM/yyyy HH:mm:ss"
-                          )}
-                    </td> */}
                         <td>
                           <button
                             onClick={() => handleShowDetails(resultat)}

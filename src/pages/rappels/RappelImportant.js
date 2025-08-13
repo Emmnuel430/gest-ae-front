@@ -99,13 +99,23 @@ const RappelImportant = () => {
       <div className="d-flex flex-column flex-md-row align-items-center justify-content-between mb-2">
         <div className="mb-0 d-flex  align-items-center">
           <h4 className="mb-0 me-2">Rappels Importants ({totalRappels})</h4>
-          <span className="rounded rounded-circle border border-danger bg-danger-subtle text-danger p-2 me-2">
+          <span
+            className="d-inline-flex align-items-center justify-content-center rounded-circle border border-danger bg-danger-subtle text-danger me-2"
+            style={{ width: "40px", height: "40px" }}
+          >
             {rappelsPrioriteElevee}
           </span>
-          <span className="rounded rounded-circle border border-warning bg-warning-subtle text-warning p-2 me-2">
+          <span
+            className="d-inline-flex align-items-center justify-content-center rounded-circle border border-warning bg-warning-subtle text-warning me-2"
+            style={{ width: "40px", height: "40px" }}
+          >
             {rappelsPrioriteMoyenne}
           </span>
-          <span className="rounded rounded-circle border border-secondary bg-secondary-subtle text-secondary p-2">
+
+          <span
+            className="d-inline-flex align-items-center justify-content-center rounded-circle border border-secondary bg-secondary-subtle text-secondary"
+            style={{ width: "40px", height: "40px" }}
+          >
             {rappelsPrioriteFaible}
           </span>
         </div>

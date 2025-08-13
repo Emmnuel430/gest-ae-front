@@ -7,6 +7,7 @@ const Statistiques = () => {
   const [totaux, setTotaux] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const userInfo = JSON.parse(sessionStorage.getItem("user-info"));
 
   useEffect(() => {
     const fetchData = async () => {
@@ -77,30 +78,32 @@ const Statistiques = () => {
           {/* Section Totaux */}
           <div className="row g-4 mb-4">
             {/* Carte pour le revenu total */}
-            <div className="col-sm-6 col-xl-3">
-              <Link to="/global" className="text-decoration-none">
-                <div className="bg-body h-100 rounded border text-dark d-flex align-items-center justify-content-between p-4 hover-shadow">
-                  <i className="fa fa-coins fa-3x text-primary"></i>
-                  <div className="ms-3">
-                    <div className="mb-2 text-body">Revenu total (FCFA)</div>
-                    <h6
-                      className="text-body mb-0 h2 text-center"
-                      title={new Intl.NumberFormat("fr-FR", {
-                        useGrouping: true,
-                      }).format(totaux.totalMontantPaye || 0)}
-                    >
-                      <strong>
-                        <em>
-                          {totaux?.totalMontantPaye
-                            ? formatMontant(totaux.totalMontantPaye)
-                            : "N/A"}{" "}
-                        </em>
-                      </strong>
-                    </h6>
+            {userInfo?.role && (
+              <div className="col-sm-6 col-xl-3">
+                <Link to="/global" className="text-decoration-none">
+                  <div className="bg-body h-100 rounded border text-dark d-flex align-items-center justify-content-between p-4 hover-shadow">
+                    <i className="fa fa-coins fa-3x text-primary"></i>
+                    <div className="ms-3">
+                      <div className="mb-2 text-body">Revenu total (FCFA)</div>
+                      <h6
+                        className="text-body mb-0 h2 text-center"
+                        title={new Intl.NumberFormat("fr-FR", {
+                          useGrouping: true,
+                        }).format(totaux.totalMontantPaye || 0)}
+                      >
+                        <strong>
+                          <em>
+                            {totaux?.totalMontantPaye
+                              ? formatMontant(totaux.totalMontantPaye)
+                              : "N/A"}{" "}
+                          </em>
+                        </strong>
+                      </h6>
+                    </div>
                   </div>
-                </div>
-              </Link>
-            </div>
+                </Link>
+              </div>
+            )}
             {/* Carte pour le nombre total d'étudiants */}
             <div className="col-sm-6 col-xl-3">
               <Link to="/etudiants" className="text-decoration-none">

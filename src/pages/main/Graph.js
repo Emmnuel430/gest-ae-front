@@ -135,7 +135,7 @@ const Graph = () => {
         <>
           <div className="row g-4 mb-4">
             <div className="col-sm-12 col-xl-6">
-              <div className="bg-body text-center rounded p-4">
+              <div className="bg-body text-center rounded p-4 border">
                 <div className="d-flex align-items-center justify-content-between mb-4">
                   <h6 className="mb-0">Evolution des inscriptions</h6>
                   {/* <Link to="/global">Voir</Link> */}
@@ -150,7 +150,7 @@ const Graph = () => {
               </div>
             </div>
             <div className="col-sm-12 col-xl-6">
-              <div className="bg-body text-center rounded p-4">
+              <div className="bg-body text-center rounded p-4 border">
                 <div className="d-flex align-items-center justify-content-between mb-4">
                   <h6 className="mb-0">Etudiant par étapes</h6>
                   {/* <Link to="/etudiants">Voir</Link> */}

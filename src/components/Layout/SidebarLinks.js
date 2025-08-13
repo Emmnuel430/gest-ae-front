@@ -37,7 +37,7 @@ const SidebarLinks = ({ user }) => {
           label: "Rappels",
           extra: ["/add/rappel", "/rappels-complets"],
         },
-        ...(user.role
+        ...(user?.role
           ? [
               { to: "/global", icon: "globe", label: "Global" },
               {

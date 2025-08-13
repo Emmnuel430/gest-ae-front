@@ -41,14 +41,14 @@ const AddResultat = () => {
         if (resultat.libelle === "code") {
           // Sélectionner uniquement les étudiants en examen de code
           return (
-            e.progression?.etape === "programmé_pour_le_code" ||
-            e.progression?.etape === "examen_de_code"
+            e.progression?.etape === "programmé_pour_le_code"
+            // e.progression?.etape === "examen_de_code"
           );
         } else if (resultat.libelle === "conduite") {
           // Sélectionner uniquement les étudiants en examen de conduite
           return (
-            e.progression?.etape === "programmé_pour_la_conduite" ||
-            e.progression?.etape === "examen_de_conduite"
+            e.progression?.etape === "programmé_pour_la_conduite"
+            // e.progression?.etape === "examen_de_conduite"
           );
         }
         return true;

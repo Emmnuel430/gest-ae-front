@@ -166,14 +166,16 @@ const ProgrammationList = () => {
                     <tr key={index}>
                       <td>{index + 1}</td>
                       <td>{programmation.user?.nom || "Inconnu"}</td>
-                      <td
-                        className={`text-uppercase ${
-                          programmation.type === "code"
-                            ? "bg-info text-white"
-                            : "bg-warning text-white"
-                        }`}
-                      >
-                        {programmation.type}
+                      <td className={`text-uppercase`}>
+                        {programmation.type === "code" ? (
+                          <span className="badge bg-info">
+                            {programmation.type}
+                          </span>
+                        ) : (
+                          <span className="badge bg-warning text-dark">
+                            {programmation.type}
+                          </span>
+                        )}
                       </td>
                       <td>
                         {programmation.date_prog
@@ -195,7 +197,7 @@ const ProgrammationList = () => {
                             rel="noopener noreferrer"
                             className="btn btn-success btn-sm"
                           >
-                            Voir PDF
+                            Voir la fiche
                           </a>
                         )}
                         {/* Bouton de suppression */}

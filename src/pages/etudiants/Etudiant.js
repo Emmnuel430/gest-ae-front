@@ -144,7 +144,10 @@ const Etudiant = () => {
                   {/* En-tête principal */}
                   <div className="text-center mb-4">
                     <h2 className="text-primary mb-1">
-                      {details.nom} {details.prenom}
+                      {details.prenom}{" "}
+                      <span className="text-uppercase">
+                        <strong>{details.nom}</strong>
+                      </span>
                     </h2>
                     <h6 className="text-muted mb-2">ID ETU-{details.id}</h6>
                     <span className="badge bg-primary-subtle text-primary fs-6">
@@ -160,20 +163,8 @@ const Etudiant = () => {
                     <ProgressBar
                       currentStep={progression.etape}
                       motifInscription={details.motif_inscription}
+                      moniteur={etudiant.moniteur}
                     />
-                    {(progression.etape === "cours_de_code" ||
-                      progression.etape === "cours_de_conduite") && (
-                      <p className="text-center mt-3 mb-0">
-                        <strong>Moniteur(trice) :</strong>{" "}
-                        {etudiant.moniteur?.nom ? (
-                          <>
-                            {etudiant.moniteur.nom} {etudiant.moniteur.prenom}
-                          </>
-                        ) : (
-                          <span className="text-muted">Non affecté</span>
-                        )}
-                      </p>
-                    )}
                   </div>
 
                   {/* Informations personnelles */}

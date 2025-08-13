@@ -137,8 +137,7 @@ const UserList = () => {
               <thead>
                 <tr>
                   <th>ID</th>
-                  <th>Nom</th>
-                  <th>Prénom</th>
+                  <th>Nom & Prenom</th>
                   <th>Pseudo</th>
                   <th>Rôle</th>
                   <th>Opérations</th>
@@ -150,16 +149,19 @@ const UserList = () => {
                   filteredUsers.map((user) => (
                     <tr key={user.id}>
                       <td>{user.id}</td>
-                      <td>{user.nom}</td>
-                      <td>{user.prenom}</td>
+                      <td className="text-uppercase">
+                        <strong>{user.nom}</strong> {user.prenom.split(" ")[0]}
+                      </td>
                       <td>{user.pseudo}</td>
                       {/* Affichage du rôle avec une couleur différente pour admin et staff */}
-                      <td
-                        className={`text-center text-uppercase ${
-                          user.role == 1 ? "bg-success" : "bg-secondary"
-                        } text-white`}
-                      >
-                        {user.role == 1 ? "Admin" : "Staff"}
+                      <td className={`text-center text-uppercase text-white`}>
+                        {user.role ? (
+                          <span className="badge bg-success">
+                            {user.dev ? "Dev" : "Admin"}
+                          </span>
+                        ) : (
+                          <span className="badge bg-secondary">Staff</span>
+                        )}
                       </td>
                       <td className="table-operations d-flex justify-content-center">
                         {/* Lien pour modifier l'utilisateur */}

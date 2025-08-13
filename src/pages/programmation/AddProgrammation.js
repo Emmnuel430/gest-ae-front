@@ -28,16 +28,11 @@ const AddProgrammation = () => {
         // Filtrage des étudiants en fonction du type de programmation
         const filteredEtudiants = data.etudiants.filter((e) => {
           if (programmation.type === "code") {
-            return (
-              // e.progression?.etape === "cours_de_code" ||
-              e.progression?.etape === "examen_de_code"
-            );
+            return e.progression?.etape === "prêt_pour_examen_code";
           } else if (programmation.type === "conduite") {
-            return (
-              // e.progression?.etape === "cours_de_conduite" ||
-              e.progression?.etape === "examen_de_conduite"
-            );
+            return e.progression?.etape === "prêt_pour_examen_conduite";
           }
+
           return true; // Si aucun type sélectionné, on affiche tous les étudiants
         });
 
@@ -121,97 +116,130 @@ const AddProgrammation = () => {
       <br />
       {error && <ToastMessage message={error} onClose={() => setError("")} />}
       <div className="row recap-container mx-auto px-4">
-        <div className="col-md-6 mb-2">
-          <h2>Nouvelle Programmation</h2>
+        <div className="col-md-6 mb-3">
+          <h2 className="mb-4">Nouvelle Programmation</h2>
+
           {/* Sélection du type de programmation */}
-          <div className="mb-2">
-            <label htmlFor="type" className="form-label mt-2">
-              Type
+          <div className="mb-3">
+            <label htmlFor="type" className="form-label fw-bold">
+              1️⃣ Type de programmation
             </label>
             <select
               id="type"
-              className="form-control"
+              className="form-select"
               value={programmation.type}
               onChange={(e) =>
                 setProgrammation((prev) => ({ ...prev, type: e.target.value }))
               }
             >
-              <option value="">Sélectionnez un type</option>
-              <option value="code">Code</option>
-              <option value="conduite">Conduite</option>
+              <option value="">-- Sélectionnez un type --</option>
+              <option value="code">📚 Code</option>
+              <option value="conduite">🚗 Conduite</option>
             </select>
           </div>
-          {/* Sélection de la date de programmation */}
-          <div className="mb-2">
-            <label htmlFor="date_prog" className="form-label mt-2">
-              Date de programmation
+
+          {/* Sélection de la date */}
+          <div className="mb-3">
+            <label htmlFor="date_prog" className="form-label fw-bold">
+              2️⃣ Date de programmation
             </label>
             <input
               type="date"
               id="date_prog"
               className="form-control"
               value={programmation.date_prog}
-              min={new Date().toISOString().split("T")[0]} // Date minimale : aujourd'hui
+              min={new Date().toISOString().split("T")[0]}
               onChange={(e) =>
                 setProgrammation((prev) => ({
                   ...prev,
                   date_prog: e.target.value,
                 }))
               }
+              disabled={!programmation.type}
             />
+            {!programmation.type && (
+              <small className="text-muted">
+                ⚠️ Sélectionnez d’abord un type avant la date.
+              </small>
+            )}
           </div>
+
           {/* Sélection des étudiants */}
-          <div className="mb-2">
-            <label htmlFor="etudiant" className="form-label mt-2">
-              Étudiant à programmer : {etudiants.length}
+          <div className="mb-3">
+            <label htmlFor="etudiant" className="form-label fw-bold">
+              3️⃣ Étudiant(s) à programmer{" "}
             </label>
             <Select
               id="etudiant"
               options={etudiants}
               onChange={handleSelectStudent}
-              placeholder="Ajouter un étudiant"
+              placeholder={
+                programmation.type
+                  ? "Rechercher ou sélectionner un étudiant"
+                  : "Sélectionnez un type pour activer"
+              }
               isSearchable
               className="mt-2"
-              theme={customTheme} // Appliquer le thème personnalisé
-              isDisabled={!programmation.type} // Désactivé tant que le type n'est pas sélectionné
+              theme={customTheme}
+              isDisabled={!programmation.type}
             />
           </div>
         </div>
+
         {/* Liste des étudiants sélectionnés */}
         <div className="col-md-6">
-          <h2>Étudiant(s) sélectionné(s)</h2>
-          <ul className="list-group">
-            {programmation.etudiants.map((etudiant, index) => (
-              <li
-                key={index}
-                className="list-group-item d-flex justify-content-between"
-              >
-                {index + 1}- {etudiant.label}
-                <button
-                  className="btn btn-danger btn-sm"
-                  onClick={() =>
-                    setProgrammation((prev) => ({
-                      ...prev,
-                      etudiants: prev.etudiants.filter(
-                        (e) => e.value !== etudiant.value
-                      ),
-                    }))
-                  }
+          <div className="mb-3">
+            <h2>Étudiant(s) sélectionné(s) </h2>
+            {programmation.etudiants.length > 0 && (
+              <span className="badge bg-success ms-2 fs-6">
+                {programmation.etudiants.length} sélectionné(s)
+              </span>
+            )}
+          </div>
+          {programmation.etudiants.length > 0 ? (
+            <ul className="list-group shadow-sm">
+              {programmation.etudiants.map((etudiant, index) => (
+                <li
+                  key={index}
+                  className="list-group-item d-flex justify-content-between align-items-center"
                 >
-                  🗑
-                </button>
-              </li>
-            ))}
-          </ul>
+                  <span>
+                    {index + 1} - {etudiant.label}
+                  </span>
+                  <button
+                    className="btn btn-outline-danger btn-sm"
+                    title="Supprimer"
+                    onClick={() =>
+                      setProgrammation((prev) => ({
+                        ...prev,
+                        etudiants: prev.etudiants.filter(
+                          (e) => e.value !== etudiant.value
+                        ),
+                      }))
+                    }
+                  >
+                    🗑
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-muted fst-italic">
+              Aucun étudiant sélectionné pour le moment.
+            </p>
+          )}
         </div>
-        {/* Bouton pour valider la programmation */}
-        <button
-          className="btn btn-primary mt-3 mx-auto w-100"
-          onClick={handleSubmit}
-          disabled={!programmation.type || !programmation.date_prog}
-        >
-          Voir Récapitulatif
-        </button>
+
+        {/* Bouton de validation */}
+        <div className="col-12 mt-4">
+          <button
+            className="btn btn-primary w-100 py-2"
+            onClick={handleSubmit}
+            disabled={!programmation.type || !programmation.date_prog}
+          >
+            📋 Voir Récapitulatif
+          </button>
+        </div>
       </div>
     </Layout>
   );

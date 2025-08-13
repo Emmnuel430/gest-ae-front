@@ -77,7 +77,7 @@ const Recents = () => {
                         <tr key={etudiant.id}>
                           <td>etu-{etudiant.id}</td>
                           <td className="text-uppercase">
-                            <strong>{etudiant.nom}</strong>{" "}
+                            <strong>{etudiant.nom.split(" ")[0]}</strong>{" "}
                             {etudiant.prenom.split(" ")[0]}
                           </td>
                           <td
